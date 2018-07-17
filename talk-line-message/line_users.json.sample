@@ -1,0 +1,4 @@
+{
+    "Comment": "Sample LINE user table file. This takes "<userId>":"<name>" pair. Put this /home/<node-red user>/.node-red",
+    "Udf5ad0b4xxxxxxxxxxxxxxxxxxxxxxxx": "太郎"
+}
