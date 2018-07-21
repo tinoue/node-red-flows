@@ -3,9 +3,9 @@
 ## Feature
 
 - Supports Google Cloud Text-To-Speech
- - Hi-Fi speech quality.
- - Supports to change voice.
- - Supports to change rate/pitch of speech.
+	- Hi-Fi speech quality.
+	- Supports to change voice.
+	- Supports to change rate/pitch of speech.
 - Supports volume level of notification.
 - Supports audio url.
 - Synchronize successive notification request.
@@ -21,21 +21,21 @@
 
 ### Common Settings
 - `Set Google Home hostname/IP address` node
- - Optional. Set this if you have trouble finding your Google Home.
+	- Optional. Set this if you have trouble finding your Google Home.
 - `Set params for google-home-notifier` node
- - language: Two letter country code. 'en' by default.
- - volume_default: Value takes 0 between 1. Set 0 not to change volume level.
- - use_cloud_tts: Use high quality Google Clound Text-To-Speech which you need to have account of Google Cloud Platform.
+	- language: Two letter country code. 'en' by default.
+	- volume_default: Value takes 0 between 1. Set 0 not to change volume level.
+	- use_cloud_tts: Use high quality Google Clound Text-To-Speech which you need to have account of Google Cloud Platform.
 
 ### Settings for Google Cloud Text-To-Speech
 - `Set apikey of Cloud Text-To-Speech` node
- - Set API key. Handle the key with care.
+	- Set API key. Handle the key with care.
 - `Set params for Google Cloud Text-To-Speech` node
- - See [demo page](https://cloud.google.com/text-to-speech/). Press "Show JSON" to get value of the following parameters.
- - languageCode : Default is "en-US".
- - voliceName : Default is "en-US-Wavenet-D"
- - speakingRate: value between 0.25 and 4.0. default is 1.0
- - pitch: value between -20 and 20. default is 0.0
+	- See [demo page](https://cloud.google.com/text-to-speech/). Press "Show JSON" to get value of the following parameters.
+	- languageCode : Default is "en-US".
+	- voliceName : Default is "en-US-Wavenet-D"
+	- speakingRate: value between 0.25 and 4.0. default is 1.0
+	- pitch: value between -20 and 20. default is 0.0
 
 ## Installation
 
