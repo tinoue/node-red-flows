@@ -4,17 +4,18 @@
 
 ### Feature
 
-- Requrires customized google-home-notifier: https://github.com/noelportugal/google-home-notifier/pull/44
+- Supports Google Cloud Text-To-Speech
+ - Hi-Fi speech quality.
+ - Supports to change voice.
+ - Supports to change rate/pitch of speech.
 - Supports volume level of notification.
 - Supports audio url.
 - Synchronize successive notification request.
+- Requrires customized google-home-notifier: https://github.com/tinoue/google-home-notifier
 
 ### Installation
 
-- Install node-red plug-in - node-red-contrib-credentials and node-red-contrib-semaphore.
-- Import [google-home-notifier.json](./google-home-notifier/google-home-notifier.json) into node-red.
-- Set "Google Home IP Address" if necessary.
-- Open "google-home-notifier wrapper" then edit language and volume.
+See [google-home-notifier/README.md](./google-home-notifier/README.md)
 
 ## talk-line-message
 
