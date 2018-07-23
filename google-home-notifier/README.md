@@ -20,7 +20,7 @@
 ## Settings:
 
 ### Common Settings
-- `Set Google Home hostname/IP address` node
+- `Set Google Home IP address` node
 	- Optional. Set this if you have trouble finding your Google Home.
 - `Set params for google-home-notifier` node
 	- language: Two letter country code. 'en' by default.

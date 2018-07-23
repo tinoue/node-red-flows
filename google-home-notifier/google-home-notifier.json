@@ -4,7 +4,7 @@
         "type": "tab",
         "label": "Google Home Notification",
         "disabled": false,
-        "info": "# node-red flow for google-home-notifier with Google Cloud Text-To-Speech\n\n## Feature\n\n- Requrires customized google-home-notifier: https://github.com/tinoue/google-home-notifier\n- Supports high quality text to speech using Google Cloud Text-To-Speech.\n- Supports volume level of notification.\n- Supports audio url.\n- Synchronize successive notification request.\n\n## Inputs:\n\n- msg.payload : Text to notify\n- msg.audio : Optional. if true the msg.payload is URL of MP3 audio.\n- msg.volume : Optional. value takes between 0 and 1.\n\n## Settings:\n\n### Common Settings\n- `Set Google Home hostname/IP address` node if you have trouble finding your Google Home\n- `Set params for google-home-notifier` node\n - language: Two letter country code. 'en' by default.\n - volume_default: Value takes 0 between 1. Set 0 not to change volume level.\n - use_cloud_tts: Use high quality Google Clound Text-To-Speech which you need to have account of Google Cloud Platform.\n\n### Settings for Google Cloud Text-To-Speech\n- `Set apikey of Cloud Text-To-Speech` node\n - Set API key. Handle the key with care.\n- `Set params for Google Cloud Text-To-Speech` node\n - See [demo page](https://cloud.google.com/text-to-speech/). Press \"Show JSON\" to get value of the following parameters.\n - languageCode : Default is \"en-US\".\n - voliceName : Default is \"en-US-Wavenet-D\"\n - speakingRate: value between 0.25 and 4.0. default is 1.0\n - pitch: value between -20 and 20. default is 0.0\n\n## Installation\n\n### Plugin dependencies:\n- node-red-contrib-credentials\n- node-red-contrib-hostip\n- node-red-node-base64\n\n### Plugin dependencies:\n- node-red-contrib-credentials\n- node-red-contrib-hostip\n- node-red-node-base64\n\n### Install google-home-notifier with volume API\n\n```\ncd <your node-red directory>\nnpm i https://github.com/tinoue/google-home-notifier.git\n```\n\nNote. This is a forked version which supports volume API.\nAlso this version includes [horihiro's patch](https://github.com/noelportugal/google-home-notifier/pull/41) which you don't have to edit browser.js.\n\n### Edit .node-red/settings.js\n```javascript\n\n   functionGlobalContext: {\n      googlehomenotifier:require('google-home-notifier')\n   :\n},\n```\n\n### restart node-red"
+        "info": "# node-red flow for google-home-notifier with Google Cloud Text-To-Speech\n\n## Feature\n\n- Requrires customized google-home-notifier: https://github.com/tinoue/google-home-notifier\n- Supports high quality text to speech using Google Cloud Text-To-Speech.\n- Supports volume level of notification.\n- Supports audio url.\n- Synchronize successive notification request.\n\n## Inputs:\n\n- msg.payload : Text to notify\n- msg.audio : Optional. if true the msg.payload is URL of MP3 audio.\n- msg.volume : Optional. value takes between 0 and 1.\n\n## Settings:\n\n### Common Settings\n- `Set Google Home IP address` node if you have trouble finding your Google Home\n- `Set params for google-home-notifier` node\n - language: Two letter country code. 'en' by default.\n - volume_default: Value takes 0 between 1. Set 0 not to change volume level.\n - use_cloud_tts: Use high quality Google Clound Text-To-Speech which you need to have account of Google Cloud Platform.\n\n### Settings for Google Cloud Text-To-Speech\n- `Set apikey of Cloud Text-To-Speech` node\n - Set API key. Handle the key with care.\n- `Set params for Google Cloud Text-To-Speech` node\n - See [demo page](https://cloud.google.com/text-to-speech/). Press \"Show JSON\" to get value of the following parameters.\n - languageCode : Default is \"en-US\".\n - voliceName : Default is \"en-US-Wavenet-D\"\n - speakingRate: value between 0.25 and 4.0. default is 1.0\n - pitch: value between -20 and 20. default is 0.0\n\n## Installation\n\n### Plugin dependencies:\n- node-red-contrib-credentials\n- node-red-contrib-hostip\n- node-red-node-base64\n\n### Plugin dependencies:\n- node-red-contrib-credentials\n- node-red-contrib-hostip\n- node-red-node-base64\n\n### Install google-home-notifier with volume API\n\n```\ncd <your node-red directory>\nnpm i https://github.com/tinoue/google-home-notifier.git\n```\n\nNote. This is a forked version which supports volume API.\nAlso this version includes [horihiro's patch](https://github.com/noelportugal/google-home-notifier/pull/41) which you don't have to edit browser.js.\n\n### Edit .node-red/settings.js\n```javascript\n\n   functionGlobalContext: {\n      googlehomenotifier:require('google-home-notifier')\n   :\n},\n```\n\n### restart node-red"
     },
     {
         "id": "2859a4cd.800f8c",
@@ -131,8 +131,8 @@
             "778f6eab.3f585",
             "8e0e3fc6.ff63d"
         ],
-        "x": 811,
-        "y": 272,
+        "x": 684,
+        "y": 309,
         "wires": [
             [
                 "e09e779c.5061c8",
@@ -144,14 +144,14 @@
         "id": "8e0e3fc6.ff63d",
         "type": "credentials",
         "z": "4f98cc14.8a3424",
-        "name": "Set hostname/address of Google Home (optional)",
+        "name": "Set IP address of Google Home (optional)",
         "props": [
             {
                 "value": "ipaddress",
                 "type": "msg"
             }
         ],
-        "x": 465,
+        "x": 435,
         "y": 259,
         "wires": [
             [
@@ -212,7 +212,9 @@
         "z": "4f98cc14.8a3424",
         "name": "",
         "statusCode": "",
-        "headers": {},
+        "headers": {
+            "content-type": "audio/mp3"
+        },
         "x": 877,
         "y": 718,
         "wires": []
@@ -368,8 +370,8 @@
         "active": true,
         "console": "false",
         "complete": "true",
-        "x": 832,
-        "y": 338,
+        "x": 886,
+        "y": 308,
         "wires": []
     },
     {
@@ -402,7 +404,8 @@
         "y": 718,
         "wires": [
             [
-                "bd45bdf3.4113e"
+                "bd45bdf3.4113e",
+                "f62ff322.0d56a"
             ]
         ]
     },
@@ -565,6 +568,34 @@
         "x": 438.5,
         "y": 758,
         "wires": []
+    },
+    {
+        "id": "f62ff322.0d56a",
+        "type": "debug",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 827,
+        "y": 803,
+        "wires": []
+    },
+    {
+        "id": "950bb6ea.193028",
+        "type": "catch",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "scope": [
+            "e09e779c.5061c8"
+        ],
+        "x": 814,
+        "y": 227,
+        "wires": [
+            [
+                "1648a303.fd2abd"
+            ]
+        ]
     },
     {
         "id": "91951c32.8b8da",
