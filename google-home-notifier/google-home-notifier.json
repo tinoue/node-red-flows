@@ -1,1 +1,607 @@
-[{"id":"4f98cc14.8a3424","type":"tab","label":"Google Home Notification","disabled":false,"info":"# Notifiy by Google Home\nInputs:\n- msg.payload : Text to notify or audio URL if msg.audio\n\nSetup:\n- Set Google Home IP address if you have trouble finding your Google Home\n- open 'google-home-notifier wrapper' then edit language and volume. "},{"id":"2859a4cd.800f8c","type":"function","z":"4f98cc14.8a3424","name":"google-home-notifier wrapper","func":"// Google Home Notification wrapper\n// Input:\n//   msg.payload : Text to speak or URL if msg.audio == true\n//   msg.audio : true if msg.payload is audio URL\n// Output:\n//   Unchanged msg. Sent when the notification has been finished.\n\nconst googlehome = context.global.googlehomenotifier;\nconst language = 'ja';\n\n// Comment out the line below if you don't override volume level of notification\nconst volume = 0.6; // between 0 and 1\n\nif (msg.ipaddress) {\n    googlehome.ip(msg.ipaddress, language);\n}\ngooglehome.device('Google Home', language);\nif (volume) {\n    googlehome.volume(volume);\n}\n\nif (msg.audio) {\n    // Audio message\n    var url = msg.payload;\n    node.status({text: 'Playing: ' + url});\n\n    googlehome.play(url, function(res) {\n      node.status({text: res});\n      node.send(msg);\n    });\n} else {\n    // Normal text message\n    node.status({text: 'Speaking: ' + msg.payload});\n\n    googlehome.notify(msg.payload, function(res) {\n      node.status({text:res});\n      node.send(msg);\n    });\n}\n\nreturn null;","outputs":1,"noerr":0,"x":472,"y":439,"wires":[["1c63f6ff.49a729","e09e779c.5061c8"]]},{"id":"9a411b7d.609898","type":"inject","z":"4f98cc14.8a3424","name":"","topic":"","payload":"読み上げのテスト","payloadType":"str","repeat":"","crontab":"","once":false,"x":158,"y":296,"wires":[["9729c213.c3305"]]},{"id":"9729c213.c3305","type":"semaphore-take","z":"4f98cc14.8a3424","config":"91951c32.8b8da","name":"","x":391,"y":295,"wires":[["6ec22b45.dc3674","8e0e3fc6.ff63d"]]},{"id":"e09e779c.5061c8","type":"semaphore-leave","z":"4f98cc14.8a3424","config":"91951c32.8b8da","name":"","x":875,"y":294,"wires":[["ba4c6f9.ed8889"]]},{"id":"6ec22b45.dc3674","type":"trigger","z":"4f98cc14.8a3424","op1":"","op2":"","op1type":"nul","op2type":"pay","duration":"30","extend":true,"units":"s","reset":"","name":"timeout 30s","x":639,"y":295,"wires":[["e09e779c.5061c8"]]},{"id":"ba4c6f9.ed8889","type":"function","z":"4f98cc14.8a3424","name":"clear timeout","func":"msg.reset = true;\n\nreturn msg;","outputs":1,"noerr":0,"x":747,"y":209,"wires":[["6ec22b45.dc3674"]]},{"id":"1c63f6ff.49a729","type":"debug","z":"4f98cc14.8a3424","name":"","active":true,"console":"false","complete":"false","x":847,"y":437,"wires":[]},{"id":"cb53d872.9dca68","type":"catch","z":"4f98cc14.8a3424","name":"","scope":["8e0e3fc6.ff63d","2859a4cd.800f8c"],"x":843,"y":384,"wires":[["e09e779c.5061c8"]]},{"id":"8e0e3fc6.ff63d","type":"credentials","z":"4f98cc14.8a3424","name":"Google Home IP address","props":[{"value":"ipaddress","type":"msg"}],"x":417,"y":371,"wires":[["2859a4cd.800f8c"]]},{"id":"32fd5b36.bca094","type":"link in","z":"4f98cc14.8a3424","name":"Google home notification","links":["6a2fe52c.159b1c","bcef469e.f7e968"],"x":230,"y":218,"wires":[["9729c213.c3305","a9ee9265.c68ab"]]},{"id":"a9ee9265.c68ab","type":"debug","z":"4f98cc14.8a3424","name":"","active":true,"console":"false","complete":"false","x":381.5,"y":218,"wires":[]},{"id":"91951c32.8b8da","type":"semaphore-config","z":"","name":"speak","capacity":"1"}]
+[
+    {
+        "id": "4f98cc14.8a3424",
+        "type": "tab",
+        "label": "Google Home Notification",
+        "disabled": false,
+        "info": "# node-red flow for google-home-notifier with Google Cloud Text-To-Speech\n\n## Feature\n\n- Requrires customized google-home-notifier: https://github.com/tinoue/google-home-notifier\n- Supports high quality text to speech using Google Cloud Text-To-Speech.\n- Supports volume level of notification.\n- Supports audio url.\n- Synchronize successive notification request.\n\n## Inputs:\n\n- msg.payload : Text to notify\n- msg.audio : Optional. if true the msg.payload is URL of MP3 audio.\n- msg.volume : Optional. value takes between 0 and 1.\n\n## Settings:\n\n### Common Settings\n- `Set Google Home IP address` node if you have trouble finding your Google Home\n- `Set params for google-home-notifier` node\n - language: Two letter country code. 'en' by default.\n - volume_default: Value takes 0 between 1. Set 0 not to change volume level.\n - use_cloud_tts: Use high quality Google Clound Text-To-Speech which you need to have account of Google Cloud Platform.\n\n### Settings for Google Cloud Text-To-Speech\n- `Set apikey of Cloud Text-To-Speech` node\n - Set API key. Handle the key with care.\n- `Set params for Google Cloud Text-To-Speech` node\n - See [demo page](https://cloud.google.com/text-to-speech/). Press \"Show JSON\" to get value of the following parameters.\n - languageCode : Default is \"en-US\".\n - voliceName : Default is \"en-US-Wavenet-D\"\n - speakingRate: value between 0.25 and 4.0. default is 1.0\n - pitch: value between -20 and 20. default is 0.0\n\n## Installation\n\n### Plugin dependencies:\n- node-red-contrib-credentials\n- node-red-contrib-hostip\n- node-red-node-base64\n\n### Plugin dependencies:\n- node-red-contrib-credentials\n- node-red-contrib-hostip\n- node-red-node-base64\n\n### Install google-home-notifier with volume API\n\n```\ncd <your node-red directory>\nnpm i https://github.com/tinoue/google-home-notifier.git\n```\n\nNote. This is a forked version which supports volume API.\nAlso this version includes [horihiro's patch](https://github.com/noelportugal/google-home-notifier/pull/41) which you don't have to edit browser.js.\n\n### Edit .node-red/settings.js\n```javascript\n\n   functionGlobalContext: {\n      googlehomenotifier:require('google-home-notifier')\n   :\n},\n```\n\n### restart node-red"
+    },
+    {
+        "id": "2859a4cd.800f8c",
+        "type": "function",
+        "z": "4f98cc14.8a3424",
+        "name": "google-home-notifier wrapper",
+        "func": "// Google Home Notification wrapper\n// Input:\n//   msg.payload : Text to speak or URL if msg.audio == true\n//   msg.audio : true if msg.payload is audio URL\n// Output:\n//   Unchanged msg. Sent when the notification has been finished.\n\nconst googlehome = context.global.googlehomenotifier;\nconst language = msg.language || 'en';\nconst volume = msg.volume || msg.volume_default;\n\nif (msg.ipaddress) {\n    googlehome.ip(msg.ipaddress, language);\n}\ngooglehome.device('Google Home', language);\nif (volume && googlehome.volume) {\n    googlehome.volume(volume);\n}\n\nfunction notify() {\n    // Normal text message\n    node.status({text: 'Speaking: ' + msg.payload});\n\n    googlehome.notify(msg.payload, function(res) {\n        node.status({text:res});\n        if (res == 'error') {\n            node.error('notify() error.', msg);                \n        } else {\n            node.send(msg);\n        }\n    });\n}\n\nif (msg.audio) {\n    // Audio message\n    var url = msg.payload;\n    node.status({text: 'Playing: ' + url});\n\n    googlehome.play(url, function(res) {\n        node.status({text: res});\n\n        if (res == 'error') {\n            // If cloud TTS failed, retry with normal TTS.\n            if (msg.orgText) {\n                msg.audio = false;\n                msg.payload = msg.orgText;\n                notify();\n            } else {\n                node.error('play() error.', msg);                \n            }\n        } else {\n            node.send(msg);\n        }\n    });\n} else {\n    notify();\n}\n\nreturn null;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 544,
+        "y": 412,
+        "wires": [
+            [
+                "1c63f6ff.49a729",
+                "e09e779c.5061c8"
+            ]
+        ]
+    },
+    {
+        "id": "9a411b7d.609898",
+        "type": "inject",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "topic": "",
+        "payload": "読み上げのテスト",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "x": 126,
+        "y": 182,
+        "wires": [
+            [
+                "9729c213.c3305"
+            ]
+        ]
+    },
+    {
+        "id": "9729c213.c3305",
+        "type": "semaphore-take",
+        "z": "4f98cc14.8a3424",
+        "config": "91951c32.8b8da",
+        "name": "",
+        "x": 359,
+        "y": 183,
+        "wires": [
+            [
+                "6ec22b45.dc3674",
+                "8e0e3fc6.ff63d"
+            ]
+        ]
+    },
+    {
+        "id": "e09e779c.5061c8",
+        "type": "semaphore-leave",
+        "z": "4f98cc14.8a3424",
+        "config": "91951c32.8b8da",
+        "name": "",
+        "x": 843,
+        "y": 182,
+        "wires": [
+            [
+                "ba4c6f9.ed8889"
+            ]
+        ]
+    },
+    {
+        "id": "6ec22b45.dc3674",
+        "type": "trigger",
+        "z": "4f98cc14.8a3424",
+        "op1": "",
+        "op2": "",
+        "op1type": "nul",
+        "op2type": "pay",
+        "duration": "30",
+        "extend": true,
+        "units": "s",
+        "reset": "",
+        "name": "timeout 30s",
+        "x": 607,
+        "y": 183,
+        "wires": [
+            [
+                "e09e779c.5061c8"
+            ]
+        ]
+    },
+    {
+        "id": "ba4c6f9.ed8889",
+        "type": "function",
+        "z": "4f98cc14.8a3424",
+        "name": "clear timeout",
+        "func": "msg.reset = true;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 715,
+        "y": 97,
+        "wires": [
+            [
+                "6ec22b45.dc3674"
+            ]
+        ]
+    },
+    {
+        "id": "1c63f6ff.49a729",
+        "type": "debug",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 822,
+        "y": 412,
+        "wires": []
+    },
+    {
+        "id": "cb53d872.9dca68",
+        "type": "catch",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "scope": [
+            "2859a4cd.800f8c",
+            "a8906dea.73b45",
+            "778f6eab.3f585",
+            "8e0e3fc6.ff63d"
+        ],
+        "x": 684,
+        "y": 309,
+        "wires": [
+            [
+                "e09e779c.5061c8",
+                "1648a303.fd2abd"
+            ]
+        ]
+    },
+    {
+        "id": "8e0e3fc6.ff63d",
+        "type": "credentials",
+        "z": "4f98cc14.8a3424",
+        "name": "Set IP address of Google Home (optional)",
+        "props": [
+            {
+                "value": "ipaddress",
+                "type": "msg"
+            }
+        ],
+        "x": 435,
+        "y": 259,
+        "wires": [
+            [
+                "340f0845.7df3c8"
+            ]
+        ]
+    },
+    {
+        "id": "32fd5b36.bca094",
+        "type": "link in",
+        "z": "4f98cc14.8a3424",
+        "name": "Google home notification",
+        "links": [
+            "6a2fe52c.159b1c",
+            "bcef469e.f7e968"
+        ],
+        "x": 198,
+        "y": 106,
+        "wires": [
+            [
+                "9729c213.c3305",
+                "a9ee9265.c68ab"
+            ]
+        ]
+    },
+    {
+        "id": "a9ee9265.c68ab",
+        "type": "debug",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 349.5,
+        "y": 106,
+        "wires": []
+    },
+    {
+        "id": "165a0f6e.5c6bb1",
+        "type": "http in",
+        "z": "4f98cc14.8a3424",
+        "name": "Google Cloud Text-To-Seech relay",
+        "url": "/googlecloudtts",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 158,
+        "y": 482,
+        "wires": [
+            [
+                "778f6eab.3f585"
+            ]
+        ]
+    },
+    {
+        "id": "bd45bdf3.4113e",
+        "type": "http response",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "statusCode": "",
+        "headers": {
+            "content-type": "audio/mp3"
+        },
+        "x": 877,
+        "y": 718,
+        "wires": []
+    },
+    {
+        "id": "c4132ccf.3d332",
+        "type": "http request",
+        "z": "4f98cc14.8a3424",
+        "name": "Text-To-Speech request",
+        "method": "POST",
+        "ret": "bin",
+        "url": "",
+        "tls": "",
+        "x": 732,
+        "y": 594,
+        "wires": [
+            [
+                "e6f85c73.e772a",
+                "674e252d.34df8c"
+            ]
+        ]
+    },
+    {
+        "id": "e42c3239.3310b",
+        "type": "function",
+        "z": "4f98cc14.8a3424",
+        "name": "Prepare request to Cloud Text-To-Speech",
+        "func": "// Inputs :\n//   msg.req.query.reqid\n//\n// Parameters :\n//   msg.apikey\n//   msg.languageCode (optional)\n//   msg.voiceName (optional)\n//   msg.speakingRate (optional)\n//   msg.pitcb (optional)\n//\n// Outputs : [ ok_request, error_response ]\n\nconst reqid = msg.req.query && msg.req.query.reqid;\nconst content = flow.get('cloudttscontent');\n\nif (reqid && content && content[reqid]) {\n    const orgMsg = content[reqid];\n    const text = orgMsg.orgText;\n    content[reqid] = undefined;\n    \n    const languageCode = orgMsg.languageCode || msg.languageCode || 'en-US';\n    const voiceName = orgMsg.voiceName || msg.voiceName || 'en-US-Wavenet-D';\n    const speakingRate = orgMsg.speakingRate || msg.speakingRate || 1.0;\n    const pitch = msg.pitch || 0.0;\n\n    msg.url = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize?key=' + msg.apikey;\n    msg.apikey = undefined;\n    msg.headers = {\n        'Content-Type': 'application/json'\n    };\n\n    const body = {\n        \"audioConfig\": {\n            \"audioEncoding\": \"MP3\",\n            \"pitch\": pitch.toString(),\n            \"speakingRate\": speakingRate.toString()\n        },\n        \"input\": {\n            \"text\": text\n        },\n        \"voice\": {\n            \"languageCode\": languageCode,\n            \"name\": voiceName\n        }        \n    };\n    \n    msg.payload = JSON.stringify(body);\n    node.status({text: 'reqid: ' + reqid});\n    \n    return [ msg, null ];\n} else {\n    msg.apikey = undefined;\n    msg.statusCode = 404;\n    msg.payload = null;\n    node.status({text: 'Invalid reqid'});\n\n    node.error(\"Invalid reqid\", msg);\n}\n",
+        "outputs": "1",
+        "noerr": 0,
+        "x": 343,
+        "y": 641,
+        "wires": [
+            [
+                "c4132ccf.3d332"
+            ]
+        ]
+    },
+    {
+        "id": "e6f85c73.e772a",
+        "type": "debug",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 859,
+        "y": 531,
+        "wires": []
+    },
+    {
+        "id": "778f6eab.3f585",
+        "type": "credentials",
+        "z": "4f98cc14.8a3424",
+        "name": "Set apikey of Cloud Text-To-Speech",
+        "props": [
+            {
+                "value": "apikey",
+                "type": "msg"
+            }
+        ],
+        "x": 327,
+        "y": 542,
+        "wires": [
+            [
+                "22a48614.07faba"
+            ]
+        ]
+    },
+    {
+        "id": "ee6314df.8f86c8",
+        "type": "hostip",
+        "z": "4f98cc14.8a3424",
+        "name": "Host IP",
+        "x": 316,
+        "y": 811,
+        "wires": [
+            [
+                "e4825793.168bd8"
+            ]
+        ]
+    },
+    {
+        "id": "e4825793.168bd8",
+        "type": "function",
+        "z": "4f98cc14.8a3424",
+        "name": "Store IP address into global",
+        "func": "var address = '';\n\nif (msg.payload[0] && msg.payload[0].address) {\n    address = msg.payload[0].address;\n    node.status({text: 'IP addr: ' + address});\n    \n} else {\n    node.status({text: 'No IP address found'});\n}\n\nglobal.set('ip_address', address);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 567,
+        "y": 812,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "62bb3f1f.d7381",
+        "type": "inject",
+        "z": "4f98cc14.8a3424",
+        "name": "startup trigger",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "x": 114,
+        "y": 812,
+        "wires": [
+            [
+                "ee6314df.8f86c8"
+            ]
+        ]
+    },
+    {
+        "id": "674e252d.34df8c",
+        "type": "function",
+        "z": "4f98cc14.8a3424",
+        "name": "Extract audioContent",
+        "func": "node.status({text: 'statusCode: ' + msg.statusCode});\n\nif (msg.statusCode == 200) {\n    const content = msg.payload && msg.payload.toString().match(/audioContent\"\\s*:\\s*\"([^\"]*)\"/);\n    \n    if (content && content[1]) {\n        msg.payload = content[1]; // base64 encoded audio data\n        node.status({text: 'Got audioContent'});\n    } else {\n        node.status({text: 'No audioContent'});\n        node.error('No content.', msg);\n    }\n} else {\n    node.error('Request failed.', msg);\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 723,
+        "y": 655,
+        "wires": [
+            [
+                "868a8005.67321"
+            ]
+        ]
+    },
+    {
+        "id": "a8906dea.73b45",
+        "type": "function",
+        "z": "4f98cc14.8a3424",
+        "name": "Preprocess if using Cloud Text-To-Speech",
+        "func": "// If Google Cloud TTS is enabled\nconst use_cloud_tts = msg.use_cloud_tts;\n\nif (use_cloud_tts  && ! msg.audio) {\n    msg.audio = true;\n\n    const reqid = 'req' + Math.random();\n    var content = {};\n    content[reqid] = msg;\n\n    msg.orgText = msg.payload; // Save text in case of Cloud TTS error\n    msg.payload = 'http://' + global.get('ip_address') + ':1880/googlecloudtts?reqid=' + reqid;\n\n    flow.set('cloudttscontent', content);\n}\n\nnode.status({text: 'Enable Google Cloud TTS: ' + use_cloud_tts})\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 501,
+        "y": 353,
+        "wires": [
+            [
+                "2859a4cd.800f8c"
+            ]
+        ]
+    },
+    {
+        "id": "1648a303.fd2abd",
+        "type": "debug",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 886,
+        "y": 308,
+        "wires": []
+    },
+    {
+        "id": "d1f28653.464718",
+        "type": "inject",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "topic": "",
+        "payload": "Test of text to speech",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "x": 135,
+        "y": 236,
+        "wires": [
+            [
+                "9729c213.c3305"
+            ]
+        ]
+    },
+    {
+        "id": "868a8005.67321",
+        "type": "base64",
+        "z": "4f98cc14.8a3424",
+        "name": "base64 decode",
+        "action": "",
+        "property": "payload",
+        "x": 704,
+        "y": 718,
+        "wires": [
+            [
+                "bd45bdf3.4113e",
+                "f62ff322.0d56a"
+            ]
+        ]
+    },
+    {
+        "id": "9fa33422.4dc228",
+        "type": "http response",
+        "z": "4f98cc14.8a3424",
+        "name": "Error response",
+        "statusCode": "",
+        "headers": {},
+        "x": 470,
+        "y": 717,
+        "wires": []
+    },
+    {
+        "id": "340f0845.7df3c8",
+        "type": "change",
+        "z": "4f98cc14.8a3424",
+        "name": "Set parmeters for google-home-notifier",
+        "rules": [
+            {
+                "t": "set",
+                "p": "language",
+                "pt": "msg",
+                "to": "ja",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "volume_default",
+                "pt": "msg",
+                "to": "0.5",
+                "tot": "num"
+            },
+            {
+                "t": "set",
+                "p": "use_cloud_tts",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 425,
+        "y": 305,
+        "wires": [
+            [
+                "a8906dea.73b45"
+            ]
+        ]
+    },
+    {
+        "id": "22a48614.07faba",
+        "type": "change",
+        "z": "4f98cc14.8a3424",
+        "name": "Set params for Google Colud Text-To-Speech",
+        "rules": [
+            {
+                "t": "set",
+                "p": "languageCode",
+                "pt": "msg",
+                "to": "ja-JP",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "voiceName",
+                "pt": "msg",
+                "to": "ja-JP-Wavenet-A",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "speakingRate",
+                "pt": "msg",
+                "to": "1.1",
+                "tot": "num"
+            },
+            {
+                "t": "set",
+                "p": "pitch",
+                "pt": "msg",
+                "to": "",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 357,
+        "y": 590,
+        "wires": [
+            [
+                "e42c3239.3310b"
+            ]
+        ]
+    },
+    {
+        "id": "2693b39e.9cf79c",
+        "type": "comment",
+        "z": "4f98cc14.8a3424",
+        "name": "Set here ->",
+        "info": "- language\n\nDefault is 'en'. Check [languageCode](https://cloud.google.com/speech-to-text/docs/languages) for more info.\n\n- volume\n\nSet only if you want to change volume level of speech. The value takes between 0 and 1 (loudest).\n\n- use_cloud_tts\n\nDefault is false. Set true to use Google Cloud Test-To-Speech API which is higher quality. NOTE: You need to have Google Cloud account and API key which is not free to use.",
+        "x": 162,
+        "y": 284,
+        "wires": []
+    },
+    {
+        "id": "796bd7a6.c6bc58",
+        "type": "comment",
+        "z": "4f98cc14.8a3424",
+        "name": "Set here ->",
+        "info": "## These parameters are required if you use [Google Colud Text-To-Speech](https://cloud.google.com/text-to-speech/).\n\n- apikey\n\nAPI Key of [Google Colud Text-To-Speech](https://cloud.google.com/text-to-speech/).\n\n\n## Parameters\n\nYou can check the following 4 parameters by opening [Google demo page](https://cloud.google.com/text-to-speech/) and click \"Show JSON\".\n\n- languageCode\n\ndefault is \"en-US\".\n\n- volumeName\n\ndefault is \"en-US-Wavenet-D\".\n\n- speakingRate\n\ndefault is \"1.0\" \n\n- pitch\n\ndefault is \"0.0\"\n\n",
+        "x": 82,
+        "y": 564,
+        "wires": []
+    },
+    {
+        "id": "47ca912a.3b84e",
+        "type": "comment",
+        "z": "4f98cc14.8a3424",
+        "name": "Google-home-notifier flow link entry",
+        "info": "## Inputs\n\n- msg.payload\n\nText to speak.\n\n- msg.audio\n\nIf true, msg.payload is a URL for MP3 audio file.",
+        "x": 175,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "35e27fbe.6fec8",
+        "type": "catch",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "scope": [
+            "674e252d.34df8c",
+            "e42c3239.3310b"
+        ],
+        "x": 245,
+        "y": 717,
+        "wires": [
+            [
+                "9fa33422.4dc228",
+                "613a8de3.ed6564"
+            ]
+        ]
+    },
+    {
+        "id": "613a8de3.ed6564",
+        "type": "debug",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 438.5,
+        "y": 758,
+        "wires": []
+    },
+    {
+        "id": "f62ff322.0d56a",
+        "type": "debug",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 827,
+        "y": 803,
+        "wires": []
+    },
+    {
+        "id": "950bb6ea.193028",
+        "type": "catch",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "scope": [
+            "e09e779c.5061c8"
+        ],
+        "x": 814,
+        "y": 227,
+        "wires": [
+            [
+                "1648a303.fd2abd"
+            ]
+        ]
+    },
+    {
+        "id": "91951c32.8b8da",
+        "type": "semaphore-config",
+        "z": "",
+        "name": "speak",
+        "capacity": "1"
+    }
+]
