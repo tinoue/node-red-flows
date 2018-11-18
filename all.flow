@@ -1,1 +1,1942 @@
-[{"id":"83dd253d.423d78","type":"tab","label":"TV ON/OFF","disabled":false,"info":""},{"id":"3b143260.9ec95e","type":"tab","label":"AC ON/OFF","disabled":false,"info":""},{"id":"f9063cc0.7720d","type":"tab","label":"Notify phone call","disabled":false,"info":""},{"id":"df94414b.e7c66","type":"tab","label":"Talk LINE message","disabled":false,"info":""},{"id":"4f98cc14.8a3424","type":"tab","label":"Google Home Notification","disabled":false,"info":"# node-red flow for google-home-notifier with Google Cloud Text-To-Speech\n\n## Feature\n\n- Requrires customized google-home-notifier: https://github.com/tinoue/google-home-notifier\n- Supports high quality text to speech using Google Cloud Text-To-Speech.\n- Supports volume level of notification.\n- Supports audio url.\n- Synchronize successive notification request.\n\n## Inputs:\n\n- msg.payload : Text to notify\n- msg.audio : Optional. if true the msg.payload is URL of MP3 audio.\n- msg.volume : Optional. value takes between 0 and 1.\n\n## Settings:\n\n### Common Settings\n- `Set Google Home IP address` node if you have trouble finding your Google Home\n- `Set params for google-home-notifier` node\n - language: Two letter country code. 'en' by default.\n - volume_default: Value takes 0 between 1. Set 0 not to change volume level.\n - use_cloud_tts: Use high quality Google Clound Text-To-Speech which you need to have account of Google Cloud Platform.\n\n### Settings for Google Cloud Text-To-Speech\n- `Set apikey of Cloud Text-To-Speech` node\n - Set API key. Handle the key with care.\n- `Set params for Google Cloud Text-To-Speech` node\n - See [demo page](https://cloud.google.com/text-to-speech/). Press \"Show JSON\" to get value of the following parameters.\n - languageCode : Default is \"en-US\".\n - voliceName : Default is \"en-US-Wavenet-D\"\n - speakingRate: value between 0.25 and 4.0. default is 1.0\n - pitch: value between -20 and 20. default is 0.0\n\n## Installation\n\n### Plugin dependencies:\n- node-red-contrib-credentials\n- node-red-contrib-hostip\n- node-red-node-base64\n\n### Plugin dependencies:\n- node-red-contrib-credentials\n- node-red-contrib-hostip\n- node-red-node-base64\n\n### Install google-home-notifier with volume API\n\n```\ncd <your node-red directory>\nnpm i https://github.com/tinoue/google-home-notifier.git\n```\n\nNote. This is a forked version which supports volume API.\nAlso this version includes [horihiro's patch](https://github.com/noelportugal/google-home-notifier/pull/41) which you don't have to edit browser.js.\n\n### Edit .node-red/settings.js\n```javascript\n\n   functionGlobalContext: {\n      googlehomenotifier:require('google-home-notifier')\n   :\n},\n```\n\n### restart node-red"},{"id":"8ef1c622.3bdf38","type":"alexa-home-conf","z":"","username":"tinoue"},{"id":"fd3df410.9a57d8","type":"mqtt-broker","z":"","broker":"mqtt.beebotte.com","port":"8883","tls":"","clientid":"","usetls":true,"compatmode":true,"keepalive":"60","cleansession":true,"willTopic":"","willQos":"0","willPayload":"","birthTopic":"","birthQos":"0","birthPayload":""},{"id":"91951c32.8b8da","type":"semaphore-config","z":"","name":"speak","capacity":"1"},{"id":"f7fc179c.be2948","type":"mqtt-broker","z":"","broker":"mqtt.beebotte.com","port":"8883","tls":"","clientid":"","usetls":true,"compatmode":true,"keepalive":"60","cleansession":true,"willTopic":"","willQos":"0","willPayload":"","birthTopic":"","birthQos":"2","birthPayload":""},{"id":"80f303b3.37d3f","type":"exec","z":"83dd253d.423d78","command":"/home/pi/bin/broadlink.sh","addpay":false,"append":"TV.onoff","useSpawn":"false","timer":"15","oldrc":false,"name":"TV.onoff","x":516,"y":36.5,"wires":[[],[],[]]},{"id":"37118b74.fb2ab4","type":"switch","z":"83dd253d.423d78","name":"dispatch by command","property":"command","propertyType":"msg","rules":[{"t":"eq","v":"TurnOnRequest","vt":"str"},{"t":"eq","v":"TurnOffRequest","vt":"str"},{"t":"eq","v":"SetPercentageRequest","vt":"str"},{"t":"eq","v":"IncrementPercentageRequest","vt":"str"},{"t":"eq","v":"DecrementPercentageRequest","vt":"str"},{"t":"eq","v":"SetColorRequ
+[
+    {
+        "id": "83dd253d.423d78",
+        "type": "tab",
+        "label": "TV ON/OFF",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "3b143260.9ec95e",
+        "type": "tab",
+        "label": "AC ON/OFF",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "f9063cc0.7720d",
+        "type": "tab",
+        "label": "Notify phone call",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "df94414b.e7c66",
+        "type": "tab",
+        "label": "Talk LINE message",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "4f98cc14.8a3424",
+        "type": "tab",
+        "label": "Google Home Notification",
+        "disabled": false,
+        "info": "# node-red flow for google-home-notifier with Google Cloud Text-To-Speech\n\n## Feature\n\n- Requrires customized google-home-notifier: https://github.com/tinoue/google-home-notifier\n- Supports high quality text to speech using Google Cloud Text-To-Speech.\n- Supports volume level of notification.\n- Supports audio url.\n- Synchronize successive notification request.\n\n## Inputs:\n\n- msg.payload : Text to notify\n- msg.audio : Optional. if true the msg.payload is URL of MP3 audio.\n- msg.volume : Optional. value takes between 0 and 1.\n\n## Settings:\n\n### Common Settings\n- `Set Google Home IP address` node if you have trouble finding your Google Home\n- `Set params for google-home-notifier` node\n - language: Two letter country code. 'en' by default.\n - volume_default: Value takes 0 between 1. Set 0 not to change volume level.\n - use_cloud_tts: Use high quality Google Clound Text-To-Speech which you need to have account of Google Cloud Platform.\n\n### Settings for Google Cloud Text-To-Speech\n- `Set apikey of Cloud Text-To-Speech` node\n - Set API key. Handle the key with care.\n- `Set params for Google Cloud Text-To-Speech` node\n - See [demo page](https://cloud.google.com/text-to-speech/). Press \"Show JSON\" to get value of the following parameters.\n - languageCode : Default is \"en-US\".\n - voliceName : Default is \"en-US-Wavenet-D\"\n - speakingRate: value between 0.25 and 4.0. default is 1.0\n - pitch: value between -20 and 20. default is 0.0\n\n## Installation\n\n### Plugin dependencies:\n- node-red-contrib-credentials\n- node-red-contrib-hostip\n- node-red-node-base64\n\n### Plugin dependencies:\n- node-red-contrib-credentials\n- node-red-contrib-hostip\n- node-red-node-base64\n\n### Install google-home-notifier with volume API\n\n```\ncd <your node-red directory>\nnpm i https://github.com/tinoue/google-home-notifier.git\n```\n\nNote. This is a forked version which supports volume API.\nAlso this version includes [horihiro's patch](https://github.com/noelportugal/google-home-notifier/pull/41) which you don't have to edit browser.js.\n\n### Edit .node-red/settings.js\n```javascript\n\n   functionGlobalContext: {\n      googlehomenotifier:require('google-home-notifier')\n   :\n},\n```\n\n### restart node-red"
+    },
+    {
+        "id": "8ef1c622.3bdf38",
+        "type": "alexa-home-conf",
+        "z": "",
+        "username": "tinoue"
+    },
+    {
+        "id": "fd3df410.9a57d8",
+        "type": "mqtt-broker",
+        "z": "",
+        "broker": "mqtt.beebotte.com",
+        "port": "8883",
+        "tls": "",
+        "clientid": "",
+        "usetls": true,
+        "compatmode": true,
+        "keepalive": "60",
+        "cleansession": true,
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": ""
+    },
+    {
+        "id": "91951c32.8b8da",
+        "type": "semaphore-config",
+        "z": "",
+        "name": "speak",
+        "capacity": "1"
+    },
+    {
+        "id": "f7fc179c.be2948",
+        "type": "mqtt-broker",
+        "z": "",
+        "broker": "mqtt.beebotte.com",
+        "port": "8883",
+        "tls": "",
+        "clientid": "",
+        "usetls": true,
+        "compatmode": true,
+        "keepalive": "60",
+        "cleansession": true,
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "birthTopic": "",
+        "birthQos": "2",
+        "birthPayload": ""
+    },
+    {
+        "id": "80f303b3.37d3f",
+        "type": "exec",
+        "z": "83dd253d.423d78",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": false,
+        "append": "TV.onoff",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "TV.onoff",
+        "x": 516,
+        "y": 36.5,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "37118b74.fb2ab4",
+        "type": "switch",
+        "z": "83dd253d.423d78",
+        "name": "dispatch by command",
+        "property": "command",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "TurnOnRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "TurnOffRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "SetPercentageRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "IncrementPercentageRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "DecrementPercentageRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "SetColorRequest",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "outputs": 6,
+        "x": 252.5,
+        "y": 138,
+        "wires": [
+            [
+                "80f303b3.37d3f"
+            ],
+            [
+                "338fbd4.1ecd442"
+            ],
+            [
+                "f9c2b192.85889"
+            ],
+            [
+                "398c808f.cd0ae"
+            ],
+            [
+                "eef00f53.94dc9"
+            ],
+            [
+                "ea8b5bcc.6221c8"
+            ]
+        ]
+    },
+    {
+        "id": "338fbd4.1ecd442",
+        "type": "exec",
+        "z": "83dd253d.423d78",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": false,
+        "append": "TV.onoff",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "TV.onoff",
+        "x": 518,
+        "y": 96,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "398c808f.cd0ae",
+        "type": "exec",
+        "z": "83dd253d.423d78",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": false,
+        "append": "VOLUP",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "VOLUP",
+        "x": 523,
+        "y": 326,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "eef00f53.94dc9",
+        "type": "exec",
+        "z": "83dd253d.423d78",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": false,
+        "append": "VOLDN",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "VOLDN",
+        "x": 523,
+        "y": 408,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "df8cca18.c25688",
+        "type": "exec",
+        "z": "83dd253d.423d78",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": true,
+        "append": "",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "broadlink",
+        "x": 613,
+        "y": 246,
+        "wires": [
+            [
+                "6cc644ba.8cc1cc"
+            ],
+            [
+                "6cc644ba.8cc1cc"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "4916dae2.759824",
+        "type": "debug",
+        "z": "83dd253d.423d78",
+        "name": "",
+        "active": false,
+        "console": "false",
+        "complete": "payload",
+        "x": 239,
+        "y": 365,
+        "wires": []
+    },
+    {
+        "id": "f9c2b192.85889",
+        "type": "function",
+        "z": "83dd253d.423d78",
+        "name": "temp to channel",
+        "func": "channel = msg.payload;\n\nif (channel == 98) {\n    msg.payload = 'DTB.on';\n//} else if (channel == 99) {\n//    msg.payload = 'INPUT.on';\n} else if (channel == 99) {\n    msg.payload = 'BS.on';\n} else if (channel == 100) {\n    msg.payload = 'PROGRAM.on';\n} else {\n    channel = channel <= 12 ? channel : channel % 10;\n    msg.payload = 'TUNE.' + channel + 'ch';\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 544,
+        "y": 152,
+        "wires": [
+            [
+                "df8cca18.c25688"
+            ]
+        ]
+    },
+    {
+        "id": "ea8b5bcc.6221c8",
+        "type": "function",
+        "z": "83dd253d.423d78",
+        "name": "hue to filename",
+        "func": "if (msg.payload.hue == 0) { // red\n    msg.payload = 'DTB.on';\n} else if (msg.payload.hue == 60) { // yellow\n    msg.payload = 'INPUT.on';\n} else if (msg.payload.hue == 120) { // green\n    msg.payload = 'BS.on';\n} else if (msg.payload.hue == 240) { // blue\n    msg.payload = 'PROGRAM.on';\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 560,
+        "y": 500,
+        "wires": [
+            [
+                "b67894a6.33af18",
+                "6cc644ba.8cc1cc"
+            ]
+        ]
+    },
+    {
+        "id": "b67894a6.33af18",
+        "type": "exec",
+        "z": "83dd253d.423d78",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": true,
+        "append": "",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "TV/BS/INPUT/PROGRAM",
+        "x": 601,
+        "y": 613,
+        "wires": [
+            [
+                "6cc644ba.8cc1cc"
+            ],
+            [
+                "6cc644ba.8cc1cc"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "6cc644ba.8cc1cc",
+        "type": "debug",
+        "z": "83dd253d.423d78",
+        "name": "exec stderr",
+        "active": true,
+        "console": "false",
+        "complete": "payload",
+        "x": 868,
+        "y": 88,
+        "wires": []
+    },
+    {
+        "id": "49779e07.0cbb1",
+        "type": "change",
+        "z": "83dd253d.423d78",
+        "name": "exit code to boolean",
+        "rules": [
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "0",
+                "fromt": "num",
+                "to": "true",
+                "tot": "bool"
+            },
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 907,
+        "y": 365,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "89ad9815.088b88",
+        "type": "debug",
+        "z": "3b143260.9ec95e",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 108,
+        "y": 279,
+        "wires": []
+    },
+    {
+        "id": "30f8050a.5bf28a",
+        "type": "switch",
+        "z": "3b143260.9ec95e",
+        "name": "dispatch by command",
+        "property": "command",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "TurnOffRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "TurnOnRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "IncrementTargetTemperatureRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "DecrementTargetTemperatureRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "SetTemperatureRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "GetTemperatureRequest ",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "outputs": 6,
+        "x": 249,
+        "y": 854,
+        "wires": [
+            [
+                "d35f2e2f.2ea8b"
+            ],
+            [],
+            [],
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "d35f2e2f.2ea8b",
+        "type": "exec",
+        "z": "3b143260.9ec95e",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": false,
+        "append": "AC.off",
+        "useSpawn": "true",
+        "timer": "15",
+        "oldrc": false,
+        "name": "AC.off",
+        "x": 486,
+        "y": 822,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "5265411f.7896d",
+        "type": "function",
+        "z": "3b143260.9ec95e",
+        "name": "update temperature",
+        "func": "var TEMP_DEFAULT = 27\n\nvar temp = global.get(\"temp\") || TEMP_DEFAULT;\n\nmsg.wind = (msg.name !== \"エアコン\") ? \"full\" : \"auto\";\n\nswitch(msg.command) {\n    case \"TurnOffRequest\":\n        global.set(\"tep\", TEMP_DEFAULT);\n        msg.payload = 0;\n        node.status({text: 'OFF'});\n        return msg;\n        break;\n    case \"TurnOnRequest\":\n        break;\n    case \"IncrementTargetTemperatureRequest\":\n    case \"DecrementTargetTemperatureRequest\":\n        temp += msg.payload;\n        break;\n    case \"SetTargetTemperatureRequest\":\n        temp = msg.payload;\n        break;\n    default:\n        node.error(\"Error\", \"Unknown msg.command\");\n        msg.payload = null;\n        node.status({text: 'Error'});\n        return msg;\n}\n\ntemp = Math.min(temp, 29);\ntemp = Math.max(temp, 24);\n\nglobal.set(\"temp\", temp);\nnode.status({text: 'temp: ' + temp + 'C'});\n\nmsg.payload = temp;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 380,
+        "y": 418,
+        "wires": [
+            [
+                "5fa23a10.695314",
+                "a440cbd3.f2dbb8",
+                "64edd397.97d4dc",
+                "a8d32c38.1ecc3"
+            ]
+        ]
+    },
+    {
+        "id": "86fc34f6.4a9ee8",
+        "type": "function",
+        "z": "3b143260.9ec95e",
+        "name": "set exit code",
+        "func": "msg.payload = (msg.payload != null)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 691,
+        "y": 822,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d89e22b5.976e",
+        "type": "switch",
+        "z": "3b143260.9ec95e",
+        "name": "is GetTemperatureRequest ?",
+        "property": "command",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "GetTemperatureRequest",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "outputs": 2,
+        "x": 412,
+        "y": 263,
+        "wires": [
+            [
+                "3dc1c815.589218"
+            ],
+            [
+                "5265411f.7896d"
+            ]
+        ]
+    },
+    {
+        "id": "3dc1c815.589218",
+        "type": "function",
+        "z": "3b143260.9ec95e",
+        "name": "Set temp response",
+        "func": "temp = global.get(\"temp\") || 27;\n\nmsg.payload = true;\n\nmsg.extra = {\n    targetTemperature: {\n        value: temp\n    },\n    temperatureMode: {\n        value: \"COOL\"\n    }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 717,
+        "y": 196,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d7dbdc9d.3851d",
+        "type": "debug",
+        "z": "3b143260.9ec95e",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 988,
+        "y": 642,
+        "wires": []
+    },
+    {
+        "id": "5fa23a10.695314",
+        "type": "function",
+        "z": "3b143260.9ec95e",
+        "name": "Set temp response",
+        "func": "var temp = global.get(\"temp\") || 27;\n\nmsg.payload = (msg.payload != null);\n\nmsg.extra = {\n    targetTemperature: {\n        value: temp\n    }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 720,
+        "y": 338,
+        "wires": [
+            [
+                "5340fba8.4a0fe4"
+            ]
+        ]
+    },
+    {
+        "id": "5340fba8.4a0fe4",
+        "type": "debug",
+        "z": "3b143260.9ec95e",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 943,
+        "y": 359,
+        "wires": []
+    },
+    {
+        "id": "5a43402b.24e89",
+        "type": "inject",
+        "z": "3b143260.9ec95e",
+        "name": "Turn off at 1AM",
+        "topic": "",
+        "payload": "0",
+        "payloadType": "num",
+        "repeat": "",
+        "crontab": "00 01 * * *",
+        "once": false,
+        "x": 128,
+        "y": 639,
+        "wires": [
+            [
+                "64edd397.97d4dc",
+                "a8d32c38.1ecc3"
+            ]
+        ]
+    },
+    {
+        "id": "299c2337.82492c",
+        "type": "exec",
+        "z": "f9063cc0.7720d",
+        "command": "baresip",
+        "addpay": false,
+        "append": "",
+        "useSpawn": "true",
+        "timer": "",
+        "oldrc": false,
+        "name": "Notify phone call by baresip",
+        "x": 153,
+        "y": 205.5,
+        "wires": [
+            [],
+            [
+                "5aa19425.092aec"
+            ],
+            [
+                "54c1f479.4ac39c",
+                "7a85f7ff.a28568"
+            ]
+        ]
+    },
+    {
+        "id": "a6cbb43e.72a6d8",
+        "type": "debug",
+        "z": "f9063cc0.7720d",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 758,
+        "y": 418,
+        "wires": []
+    },
+    {
+        "id": "c6c4dd29.99f43",
+        "type": "http request",
+        "z": "f9063cc0.7720d",
+        "name": "LINE Notify via IFTTT webhook",
+        "method": "POST",
+        "ret": "txt",
+        "url": "",
+        "tls": "",
+        "x": 743,
+        "y": 581,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5aa19425.092aec",
+        "type": "function",
+        "z": "f9063cc0.7720d",
+        "name": "Get incoming phone number",
+        "func": "var phonenum = msg.payload.match(/from: (\\d+) sip/);\n\nif (phonenum) {\n    msg.payload = phonenum[1];\n    msg.phonenum = phonenum[1];\n    node.status({text:msg.payload});\n} else {\n    // node.status({text:''});\n    return null;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 468,
+        "y": 311,
+        "wires": [
+            [
+                "be7cdaf3.9f7958",
+                "8cdd87.5aebf278"
+            ]
+        ]
+    },
+    {
+        "id": "be7cdaf3.9f7958",
+        "type": "debug",
+        "z": "f9063cc0.7720d",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 780,
+        "y": 311,
+        "wires": []
+    },
+    {
+        "id": "9724781d.d554e8",
+        "type": "inject",
+        "z": "f9063cc0.7720d",
+        "name": "startup trigger",
+        "topic": "",
+        "payload": "dummy",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "x": 111,
+        "y": 66,
+        "wires": [
+            [
+                "299c2337.82492c"
+            ]
+        ]
+    },
+    {
+        "id": "54c1f479.4ac39c",
+        "type": "delay",
+        "z": "f9063cc0.7720d",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "30",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 146,
+        "y": 374,
+        "wires": [
+            [
+                "299c2337.82492c"
+            ]
+        ]
+    },
+    {
+        "id": "7a85f7ff.a28568",
+        "type": "debug",
+        "z": "f9063cc0.7720d",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 422,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "8cdd87.5aebf278",
+        "type": "http request",
+        "z": "f9063cc0.7720d",
+        "name": "電話帳ナビアクセス",
+        "method": "GET",
+        "ret": "txt",
+        "url": "https://www.telnavi.jp/phone/{{{payload}}}",
+        "tls": "",
+        "x": 448,
+        "y": 422,
+        "wires": [
+            [
+                "c8649a5b.5b2868",
+                "a6cbb43e.72a6d8"
+            ]
+        ]
+    },
+    {
+        "id": "c8649a5b.5b2868",
+        "type": "function",
+        "z": "f9063cc0.7720d",
+        "name": "Get description",
+        "func": "// msg.payload : content of http response\n// msg.phonenum : phone number\n\nvar description = msg.payload.match(/<meta name=\"description\" content=\"(.*?)\"/);\n\nmsg.description = description;\n\nif (description && 0 <= description[1].indexOf(msg.phonenum)) {\n    description = description[1];\n} else {\n    description = \"電話番号\" + msg.phonenum + \"の情報はありません。\";\n}\n\nmsg.payload = {\n value1: description,\n value2: \"電話帳ナビ: https://www.telnavi.jp/phone/\" + msg.phonenum\n};\n\nnode.status({text: description});\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 426,
+        "y": 516,
+        "wires": [
+            [
+                "be7cdaf3.9f7958",
+                "ac17b1b1.5bac7",
+                "ee9327bc.717808"
+            ]
+        ]
+    },
+    {
+        "id": "a8d32c38.1ecc3",
+        "type": "function",
+        "z": "3b143260.9ec95e",
+        "name": "get remote command file",
+        "func": "if (msg.payload === 0) {\n    msg.payload = \"AC.off\";\n} else if (msg.payload != null) {\n    msg.payload = \"AC\" + msg.payload + msg.wind + \".on\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 690,
+        "y": 536,
+        "wires": [
+            [
+                "a2564858.60d7d8"
+            ]
+        ]
+    },
+    {
+        "id": "a2564858.60d7d8",
+        "type": "exec",
+        "z": "3b143260.9ec95e",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": true,
+        "append": "",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "Send command to remote",
+        "x": 733,
+        "y": 639,
+        "wires": [
+            [],
+            [
+                "d7dbdc9d.3851d"
+            ],
+            [
+                "d7dbdc9d.3851d"
+            ]
+        ]
+    },
+    {
+        "id": "a440cbd3.f2dbb8",
+        "type": "debug",
+        "z": "3b143260.9ec95e",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 701,
+        "y": 418,
+        "wires": []
+    },
+    {
+        "id": "64edd397.97d4dc",
+        "type": "file",
+        "z": "3b143260.9ec95e",
+        "name": "write to /tmp/actemp",
+        "filename": "/tmp/actemp",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "true",
+        "x": 681,
+        "y": 478,
+        "wires": []
+    },
+    {
+        "id": "939ee260.b5b5a",
+        "type": "alexa-home",
+        "z": "83dd253d.423d78",
+        "conf": "8ef1c622.3bdf38",
+        "device": "26462",
+        "acknoledge": true,
+        "name": "テレビ",
+        "topic": "",
+        "x": 42,
+        "y": 139,
+        "wires": [
+            [
+                "37118b74.fb2ab4",
+                "4916dae2.759824"
+            ]
+        ]
+    },
+    {
+        "id": "2afe1e08.ddd3c2",
+        "type": "alexa-home",
+        "z": "3b143260.9ec95e",
+        "conf": "8ef1c622.3bdf38",
+        "device": "26463",
+        "acknoledge": true,
+        "name": "エアコン",
+        "topic": "",
+        "x": 65,
+        "y": 204,
+        "wires": [
+            [
+                "89ad9815.088b88",
+                "d89e22b5.976e"
+            ]
+        ]
+    },
+    {
+        "id": "2148c676.e23f5a",
+        "type": "alexa-home",
+        "z": "3b143260.9ec95e",
+        "conf": "8ef1c622.3bdf38",
+        "device": "26464",
+        "acknoledge": true,
+        "name": "冷房",
+        "topic": "",
+        "x": 55,
+        "y": 352,
+        "wires": [
+            [
+                "d89e22b5.976e"
+            ]
+        ]
+    },
+    {
+        "id": "dba548bb.03fba8",
+        "type": "alexa-home",
+        "z": "3b143260.9ec95e",
+        "conf": "8ef1c622.3bdf38",
+        "device": "26465",
+        "acknoledge": true,
+        "name": "クーラー",
+        "topic": "",
+        "x": 65,
+        "y": 438,
+        "wires": [
+            [
+                "d89e22b5.976e"
+            ]
+        ]
+    },
+    {
+        "id": "1fb9ebda.52dbb4",
+        "type": "alexa-local",
+        "z": "83dd253d.423d78",
+        "devicename": "モニター",
+        "inputtrigger": false,
+        "x": 62,
+        "y": 570,
+        "wires": [
+            [
+                "58cae1ba.7d406"
+            ]
+        ]
+    },
+    {
+        "id": "58cae1ba.7d406",
+        "type": "debug",
+        "z": "83dd253d.423d78",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 284,
+        "y": 707,
+        "wires": []
+    },
+    {
+        "id": "fb7da211.36f73",
+        "type": "mqtt in",
+        "z": "df94414b.e7c66",
+        "name": "LINE message from beebotte via MS Flow",
+        "topic": "line/message",
+        "qos": "2",
+        "broker": "fd3df410.9a57d8",
+        "x": 193,
+        "y": 153,
+        "wires": [
+            [
+                "64ceac22.a6c9e4",
+                "392918ae.e3bf18"
+            ]
+        ]
+    },
+    {
+        "id": "64ceac22.a6c9e4",
+        "type": "debug",
+        "z": "df94414b.e7c66",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 289,
+        "y": 221,
+        "wires": []
+    },
+    {
+        "id": "99da5480.097588",
+        "type": "function",
+        "z": "df94414b.e7c66",
+        "name": "get text to speak",
+        "func": "function getUsername(userId) {\n  // Create line users json file\n  // eg. [ \"Uabcdefghijklmnopqrstuvwxyz0123456789\": \"太郎\" }\n \n  if (flow.get('line_users') && flow.get('line_users')[userId]) {\n      return flow.get('line_users')[userId] + 'からLINE。';\n  }\n  \n  return '';\n}\n\nif (typeof(msg.payload.data) === 'string') {\n    msg.payload = msg.payload.data;\n} else if (msg.payload.data[0]) {\n  // Get LINE message sent from beebotte\n  const event = msg.payload.data[0];\n\n  if (event.type === 'message' && event.message.type === 'text') {\n    const username = getUsername(event.source.userId);\n    const text = username + event.message.text;\n\n    if (event.source.groupId && \n        ! event.message.text.match(/^[　 ]/) &&\n        ! event.message.text.match(/^\\[IFTTT\\][　 ]{2}/)) {\n        return null;\n    }\n\n    msg.payload = text;\n  } else if (event.type === 'message' && event.message.type === 'audio') {\n    const audioUrl = 'https://api.line.me/v2/bot/message/' + event.message.id + '/content';\n    flow.set(\"line_content_url\", audioUrl);\n\n    msg.payload = 'http://' + global.get('ip_address') + ':1880/linecontent';\n    msg.audio = true;\n  } else {\n    node.warn('No text message.');\n    return null;\n  }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 571,
+        "y": 227,
+        "wires": [
+            [
+                "6a2fe52c.159b1c"
+            ]
+        ]
+    },
+    {
+        "id": "392918ae.e3bf18",
+        "type": "json",
+        "z": "df94414b.e7c66",
+        "name": "parse events json",
+        "pretty": true,
+        "x": 529,
+        "y": 154,
+        "wires": [
+            [
+                "99da5480.097588"
+            ]
+        ]
+    },
+    {
+        "id": "ac17b1b1.5bac7",
+        "type": "function",
+        "z": "f9063cc0.7720d",
+        "name": "Get name of caller",
+        "func": "var caution = msg.payload.value1.match(/【(迷惑電話度\\d*%)/);\nvar caller = msg.payload.value1.match(/（([^0-9].*?)）/);\nvar message = '';\n\nif (caution && 0 < caution[1].length) {\n    message = caution[1] + '。';\n}\n\nif (caller && 0 < caller[1].length) {\n    caller = caller[1];\n    message = message + caller + '　から電話です。';\n} \n\nif (0 === message.length) {\n    return null;\n}\n\nnode.status({text: message});\n\nmsg.payload = message + message;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 438,
+        "y": 644,
+        "wires": [
+            [
+                "bcef469e.f7e968"
+            ]
+        ]
+    },
+    {
+        "id": "91f83c2c.ce012",
+        "type": "http in",
+        "z": "df94414b.e7c66",
+        "name": "LINE audio endpoint for google-home-notifier",
+        "url": "/linecontent",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 197,
+        "y": 624,
+        "wires": [
+            [
+                "84bfed71.d2e",
+                "1be888c8.22ead7"
+            ]
+        ]
+    },
+    {
+        "id": "54921098.f3b11",
+        "type": "http response",
+        "z": "df94414b.e7c66",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 746,
+        "y": 830,
+        "wires": []
+    },
+    {
+        "id": "5481bae8.f5f2d4",
+        "type": "http request",
+        "z": "df94414b.e7c66",
+        "name": "Get line message content",
+        "method": "GET",
+        "ret": "bin",
+        "url": "",
+        "tls": "",
+        "x": 531,
+        "y": 830,
+        "wires": [
+            [
+                "54921098.f3b11",
+                "84bfed71.d2e"
+            ]
+        ]
+    },
+    {
+        "id": "548fe733.70e208",
+        "type": "function",
+        "z": "df94414b.e7c66",
+        "name": "Set URL and token of LINE content",
+        "func": "const channelAccessToken = msg.token;\n\nmsg.url = flow.get(\"line_content_url\");\nmsg.headers = {\n    'Authorization': 'Bearer ' + channelAccessToken\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 467,
+        "y": 758,
+        "wires": [
+            [
+                "5481bae8.f5f2d4",
+                "84bfed71.d2e"
+            ]
+        ]
+    },
+    {
+        "id": "84bfed71.d2e",
+        "type": "debug",
+        "z": "df94414b.e7c66",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 721,
+        "y": 628,
+        "wires": []
+    },
+    {
+        "id": "eb56d7e.95f0928",
+        "type": "inject",
+        "z": "f9063cc0.7720d",
+        "name": "test data",
+        "topic": "",
+        "payload": "{\"value1\":\"【迷惑電話度77% (オレオレ)は\"}",
+        "payloadType": "json",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "x": 375,
+        "y": 724,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1be888c8.22ead7",
+        "type": "credentials",
+        "z": "df94414b.e7c66",
+        "name": "Channel access token of LINE",
+        "props": [
+            {
+                "value": "token",
+                "type": "msg"
+            }
+        ],
+        "x": 355,
+        "y": 690,
+        "wires": [
+            [
+                "548fe733.70e208"
+            ]
+        ]
+    },
+    {
+        "id": "2859a4cd.800f8c",
+        "type": "function",
+        "z": "4f98cc14.8a3424",
+        "name": "google-home-notifier wrapper",
+        "func": "// Google Home Notification wrapper\n// Input:\n//   msg.payload : Text to speak or URL if msg.audio == true\n//   msg.audio : true if msg.payload is audio URL\n// Output:\n//   Unchanged msg. Sent when the notification has been finished.\n\nconst googlehome = context.global.googlehomenotifier;\nconst language = msg.language || 'en';\nconst volume = msg.volume || msg.volume_default;\n\nif (msg.ipaddress) {\n    googlehome.ip(msg.ipaddress, language);\n}\ngooglehome.device('Google Home', language);\nif (volume && googlehome.volume) {\n    googlehome.volume(volume);\n}\n\nfunction notify() {\n    // Normal text message\n    node.status({fill:'yellow', shape:'dot', text: 'Speaking: ' + msg.payload});\n\n    googlehome.notify(msg.payload, function(res) {\n        if (res == 'error') {\n            node.error('notify() error.', msg);                \n            node.status({fill:'red', shape:'ring', text:res});\n        } else {\n            node.status({fill:'green', shape:'dot', text:res});\n            node.send(msg);\n        }\n    });\n}\n\nif (msg.audio) {\n    // Audio message\n    var url = msg.payload;\n    node.status({fill:'yellow', shape:'dot', text: 'Playing: ' + url});\n\n    googlehome.play(url, function(res) {\n        node.status({text: res});\n\n        if (res == 'error') {\n            // If cloud TTS failed, retry with normal TTS.\n            if (msg.orgText) {\n                msg.audio = false;\n                msg.payload = msg.orgText;\n                notify();\n            } else {\n                node.status({fill:'red', shape:'ring', text:res});\n                node.error('play() error.', msg);                \n            }\n        } else {\n            node.status({fill:'green', shape:'dot', text:res});\n            node.send(msg);\n        }\n    });\n} else {\n    notify();\n}\n\nreturn null;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 544,
+        "y": 412,
+        "wires": [
+            [
+                "1c63f6ff.49a729",
+                "e09e779c.5061c8"
+            ]
+        ]
+    },
+    {
+        "id": "9a411b7d.609898",
+        "type": "inject",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "topic": "",
+        "payload": "読み上げのテスト",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "x": 126,
+        "y": 182,
+        "wires": [
+            [
+                "9729c213.c3305"
+            ]
+        ]
+    },
+    {
+        "id": "9729c213.c3305",
+        "type": "semaphore-take",
+        "z": "4f98cc14.8a3424",
+        "config": "91951c32.8b8da",
+        "name": "",
+        "x": 359,
+        "y": 183,
+        "wires": [
+            [
+                "6ec22b45.dc3674",
+                "8e0e3fc6.ff63d"
+            ]
+        ]
+    },
+    {
+        "id": "e09e779c.5061c8",
+        "type": "semaphore-leave",
+        "z": "4f98cc14.8a3424",
+        "config": "91951c32.8b8da",
+        "name": "",
+        "x": 843,
+        "y": 182,
+        "wires": [
+            [
+                "ba4c6f9.ed8889"
+            ]
+        ]
+    },
+    {
+        "id": "6ec22b45.dc3674",
+        "type": "trigger",
+        "z": "4f98cc14.8a3424",
+        "op1": "",
+        "op2": "",
+        "op1type": "nul",
+        "op2type": "pay",
+        "duration": "30",
+        "extend": true,
+        "units": "s",
+        "reset": "",
+        "name": "timeout 30s",
+        "x": 607,
+        "y": 183,
+        "wires": [
+            [
+                "e09e779c.5061c8"
+            ]
+        ]
+    },
+    {
+        "id": "ba4c6f9.ed8889",
+        "type": "function",
+        "z": "4f98cc14.8a3424",
+        "name": "clear timeout",
+        "func": "msg.reset = true;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 715,
+        "y": 97,
+        "wires": [
+            [
+                "6ec22b45.dc3674"
+            ]
+        ]
+    },
+    {
+        "id": "1c63f6ff.49a729",
+        "type": "debug",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 822,
+        "y": 412,
+        "wires": []
+    },
+    {
+        "id": "cb53d872.9dca68",
+        "type": "catch",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "scope": [
+            "2859a4cd.800f8c",
+            "a8906dea.73b45",
+            "778f6eab.3f585",
+            "8e0e3fc6.ff63d"
+        ],
+        "x": 684,
+        "y": 309,
+        "wires": [
+            [
+                "e09e779c.5061c8",
+                "1648a303.fd2abd"
+            ]
+        ]
+    },
+    {
+        "id": "8e0e3fc6.ff63d",
+        "type": "credentials",
+        "z": "4f98cc14.8a3424",
+        "name": "Set IP address of Google Home (optional)",
+        "props": [
+            {
+                "value": "ipaddress",
+                "type": "msg"
+            }
+        ],
+        "x": 435,
+        "y": 259,
+        "wires": [
+            [
+                "340f0845.7df3c8"
+            ]
+        ]
+    },
+    {
+        "id": "32fd5b36.bca094",
+        "type": "link in",
+        "z": "4f98cc14.8a3424",
+        "name": "Google home notification",
+        "links": [
+            "6a2fe52c.159b1c",
+            "bcef469e.f7e968"
+        ],
+        "x": 198,
+        "y": 106,
+        "wires": [
+            [
+                "9729c213.c3305",
+                "a9ee9265.c68ab"
+            ]
+        ]
+    },
+    {
+        "id": "6a2fe52c.159b1c",
+        "type": "link out",
+        "z": "df94414b.e7c66",
+        "name": "Google home notification",
+        "links": [
+            "32fd5b36.bca094"
+        ],
+        "x": 701,
+        "y": 228,
+        "wires": []
+    },
+    {
+        "id": "a9ee9265.c68ab",
+        "type": "debug",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 349.5,
+        "y": 106,
+        "wires": []
+    },
+    {
+        "id": "bcef469e.f7e968",
+        "type": "link out",
+        "z": "f9063cc0.7720d",
+        "name": "Speak name of caller",
+        "links": [
+            "32fd5b36.bca094"
+        ],
+        "x": 625.5,
+        "y": 645,
+        "wires": []
+    },
+    {
+        "id": "b7ebc8c7.8cb228",
+        "type": "hostip",
+        "z": "df94414b.e7c66",
+        "name": "Host IP",
+        "x": 324,
+        "y": 534,
+        "wires": [
+            [
+                "35f06523.a51f8a"
+            ]
+        ]
+    },
+    {
+        "id": "7dc251b0.a0f01",
+        "type": "inject",
+        "z": "df94414b.e7c66",
+        "name": "startup trigger",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "x": 125,
+        "y": 317,
+        "wires": [
+            [
+                "a01cb4a4.a94d48"
+            ]
+        ]
+    },
+    {
+        "id": "35f06523.a51f8a",
+        "type": "function",
+        "z": "df94414b.e7c66",
+        "name": "Store IP address into global",
+        "func": "var address = '';\n\nif (msg.payload[0] && msg.payload[0].address) {\n    address = msg.payload[0].address;\n    node.status({text: 'IP addr: ' + address});\n    \n} else {\n    node.status({text: 'No IP address found'});\n}\n\nglobal.set('ip_address', address);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 616,
+        "y": 534,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a01cb4a4.a94d48",
+        "type": "file in",
+        "z": "df94414b.e7c66",
+        "name": "/home/pi/.node-red/line_users.json",
+        "filename": "/home/pi/.node-red/line_users.json",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "x": 393,
+        "y": 321,
+        "wires": [
+            [
+                "5cd04c24.781984"
+            ]
+        ]
+    },
+    {
+        "id": "f2505037.6275c",
+        "type": "function",
+        "z": "df94414b.e7c66",
+        "name": "Set line user table into flow variable",
+        "func": "if (msg.payload) {\n    flow.set('line_users', msg.payload);\n    node.status({text: 'line_users set.'});\n} else {\n    node.status({text: 'No line_users'});\n}\n\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 657,
+        "y": 389,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1bafee68.4e4582",
+        "type": "catch",
+        "z": "df94414b.e7c66",
+        "name": "Catch error reading line_users.json",
+        "scope": [
+            "5cd04c24.781984",
+            "a01cb4a4.a94d48"
+        ],
+        "x": 424,
+        "y": 443,
+        "wires": [
+            [
+                "2f30515a.bdb39e"
+            ]
+        ]
+    },
+    {
+        "id": "5cd04c24.781984",
+        "type": "json",
+        "z": "df94414b.e7c66",
+        "name": "parse json",
+        "pretty": true,
+        "x": 412,
+        "y": 389,
+        "wires": [
+            [
+                "f2505037.6275c"
+            ]
+        ]
+    },
+    {
+        "id": "2f30515a.bdb39e",
+        "type": "debug",
+        "z": "df94414b.e7c66",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 655,
+        "y": 444,
+        "wires": []
+    },
+    {
+        "id": "ee9327bc.717808",
+        "type": "credentials",
+        "z": "f9063cc0.7720d",
+        "name": "Set IFTTT url",
+        "props": [
+            {
+                "value": "url",
+                "type": "msg"
+            }
+        ],
+        "x": 643,
+        "y": 515,
+        "wires": [
+            [
+                "c6c4dd29.99f43"
+            ]
+        ]
+    },
+    {
+        "id": "165a0f6e.5c6bb1",
+        "type": "http in",
+        "z": "4f98cc14.8a3424",
+        "name": "Google Cloud Text-To-Seech relay",
+        "url": "/googlecloudtts",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 158,
+        "y": 482,
+        "wires": [
+            [
+                "778f6eab.3f585"
+            ]
+        ]
+    },
+    {
+        "id": "bd45bdf3.4113e",
+        "type": "http response",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "statusCode": "",
+        "headers": {
+            "content-type": "audio/mp3"
+        },
+        "x": 877,
+        "y": 718,
+        "wires": []
+    },
+    {
+        "id": "c4132ccf.3d332",
+        "type": "http request",
+        "z": "4f98cc14.8a3424",
+        "name": "Text-To-Speech request",
+        "method": "POST",
+        "ret": "bin",
+        "url": "",
+        "tls": "",
+        "x": 732,
+        "y": 594,
+        "wires": [
+            [
+                "e6f85c73.e772a",
+                "674e252d.34df8c"
+            ]
+        ]
+    },
+    {
+        "id": "e42c3239.3310b",
+        "type": "function",
+        "z": "4f98cc14.8a3424",
+        "name": "Prepare request to Cloud Text-To-Speech",
+        "func": "// Inputs :\n//   msg.req.query.reqid\n//\n// Parameters :\n//   msg.apikey\n//   msg.languageCode (optional)\n//   msg.voiceName (optional)\n//   msg.speakingRate (optional)\n//   msg.pitcb (optional)\n//\n// Outputs : [ ok_request, error_response ]\n\nconst reqid = msg.req.query && msg.req.query.reqid;\nconst content = flow.get('cloudttscontent');\n\nif (reqid && content && content[reqid]) {\n    const orgMsg = content[reqid];\n    const text = orgMsg.orgText;\n    content[reqid] = undefined;\n    \n    const languageCode = orgMsg.languageCode || msg.languageCode || 'en-US';\n    const voiceName = orgMsg.voiceName || msg.voiceName || 'en-US-Wavenet-D';\n    const speakingRate = orgMsg.speakingRate || msg.speakingRate || 1.0;\n    const pitch = msg.pitch || 0.0;\n\n    msg.url = 'https://texttospeech.googleapis.com/v1beta1/text:synthesize?key=' + msg.apikey;\n    msg.apikey = undefined;\n    msg.headers = {\n        'Content-Type': 'application/json'\n    };\n\n    const body = {\n        \"audioConfig\": {\n            \"audioEncoding\": \"MP3\",\n            \"pitch\": pitch.toString(),\n            \"speakingRate\": speakingRate.toString()\n        },\n        \"input\": {\n            \"text\": text\n        },\n        \"voice\": {\n            \"languageCode\": languageCode,\n            \"name\": voiceName\n        }        \n    };\n    \n    msg.payload = JSON.stringify(body);\n    node.status({text: 'reqid: ' + reqid});\n    \n    return [ msg, null ];\n} else {\n    msg.apikey = undefined;\n    msg.statusCode = 404;\n    msg.payload = null;\n    node.status({text: 'Invalid reqid'});\n\n    node.error(\"Invalid reqid\", msg);\n}\n",
+        "outputs": "1",
+        "noerr": 0,
+        "x": 343,
+        "y": 641,
+        "wires": [
+            [
+                "c4132ccf.3d332"
+            ]
+        ]
+    },
+    {
+        "id": "e6f85c73.e772a",
+        "type": "debug",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 859,
+        "y": 531,
+        "wires": []
+    },
+    {
+        "id": "778f6eab.3f585",
+        "type": "credentials",
+        "z": "4f98cc14.8a3424",
+        "name": "Set apikey of Cloud Text-To-Speech",
+        "props": [
+            {
+                "value": "apikey",
+                "type": "msg"
+            }
+        ],
+        "x": 327,
+        "y": 542,
+        "wires": [
+            [
+                "22a48614.07faba"
+            ]
+        ]
+    },
+    {
+        "id": "ee6314df.8f86c8",
+        "type": "hostip",
+        "z": "4f98cc14.8a3424",
+        "name": "Host IP",
+        "x": 316,
+        "y": 811,
+        "wires": [
+            [
+                "e4825793.168bd8"
+            ]
+        ]
+    },
+    {
+        "id": "e4825793.168bd8",
+        "type": "function",
+        "z": "4f98cc14.8a3424",
+        "name": "Store IP address into global",
+        "func": "var address = '';\n\nif (msg.payload[0] && msg.payload[0].address) {\n    address = msg.payload[0].address;\n    global.set('ip_address', address);\n\n    node.status({fill: 'green', shape:'dot', text: 'IP addr: ' + address});\n    return null;    \n} else {\n    node.status({fill: 'red', shape:'ring', text: 'No IP address found'});\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 567,
+        "y": 812,
+        "wires": [
+            [
+                "e1c0a9e9.6fa588"
+            ]
+        ]
+    },
+    {
+        "id": "62bb3f1f.d7381",
+        "type": "inject",
+        "z": "4f98cc14.8a3424",
+        "name": "startup trigger",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "x": 114,
+        "y": 812,
+        "wires": [
+            [
+                "ee6314df.8f86c8"
+            ]
+        ]
+    },
+    {
+        "id": "674e252d.34df8c",
+        "type": "function",
+        "z": "4f98cc14.8a3424",
+        "name": "Extract audioContent",
+        "func": "node.status({text: 'statusCode: ' + msg.statusCode});\n\nif (msg.statusCode == 200) {\n    const content = msg.payload && msg.payload.toString().match(/audioContent\"\\s*:\\s*\"([^\"]*)\"/);\n    \n    if (content && content[1]) {\n        msg.payload = content[1]; // base64 encoded audio data\n        node.status({fill:'green', shape:'dot', text: 'Got audioContent'});\n    } else {\n        node.status({fill:'red', shape:'ring', text: 'No audioContent'});\n        node.error('No content.', msg);\n    }\n} else {\n    node.status({fill:'red', shape:'ring', text: 'error: ' + msg.statusCode});\n    node.error('Request failed :' + msg.statusCode, msg);\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 723,
+        "y": 655,
+        "wires": [
+            [
+                "868a8005.67321"
+            ]
+        ]
+    },
+    {
+        "id": "a8906dea.73b45",
+        "type": "function",
+        "z": "4f98cc14.8a3424",
+        "name": "Preprocess if using Cloud Text-To-Speech",
+        "func": "// If Google Cloud TTS is enabled\nconst use_cloud_tts = msg.use_cloud_tts;\n\nif (use_cloud_tts  && ! msg.audio) {\n    msg.audio = true;\n\n    const reqid = 'req' + Math.random();\n    var content = {};\n    content[reqid] = msg;\n\n    msg.orgText = msg.payload; // Save text in case of Cloud TTS error\n    msg.payload = 'http://' + global.get('ip_address') + ':1880/googlecloudtts?reqid=' + reqid;\n\n    flow.set('cloudttscontent', content);\n}\n\nnode.status({text: 'Enable Google Cloud TTS: ' + use_cloud_tts})\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 501,
+        "y": 353,
+        "wires": [
+            [
+                "2859a4cd.800f8c"
+            ]
+        ]
+    },
+    {
+        "id": "1648a303.fd2abd",
+        "type": "debug",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 886,
+        "y": 308,
+        "wires": []
+    },
+    {
+        "id": "d1f28653.464718",
+        "type": "inject",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "topic": "",
+        "payload": "Test of text to speech",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "x": 135,
+        "y": 236,
+        "wires": [
+            [
+                "9729c213.c3305"
+            ]
+        ]
+    },
+    {
+        "id": "868a8005.67321",
+        "type": "base64",
+        "z": "4f98cc14.8a3424",
+        "name": "base64 decode",
+        "action": "",
+        "property": "payload",
+        "x": 704,
+        "y": 718,
+        "wires": [
+            [
+                "bd45bdf3.4113e",
+                "f62ff322.0d56a"
+            ]
+        ]
+    },
+    {
+        "id": "9fa33422.4dc228",
+        "type": "http response",
+        "z": "4f98cc14.8a3424",
+        "name": "Error response",
+        "statusCode": "",
+        "headers": {},
+        "x": 470,
+        "y": 717,
+        "wires": []
+    },
+    {
+        "id": "340f0845.7df3c8",
+        "type": "change",
+        "z": "4f98cc14.8a3424",
+        "name": "Set parmeters for google-home-notifier",
+        "rules": [
+            {
+                "t": "set",
+                "p": "language",
+                "pt": "msg",
+                "to": "ja",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "volume_default",
+                "pt": "msg",
+                "to": "0.5",
+                "tot": "num"
+            },
+            {
+                "t": "set",
+                "p": "use_cloud_tts",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 425,
+        "y": 305,
+        "wires": [
+            [
+                "a8906dea.73b45"
+            ]
+        ]
+    },
+    {
+        "id": "22a48614.07faba",
+        "type": "change",
+        "z": "4f98cc14.8a3424",
+        "name": "Set params for Google Colud Text-To-Speech",
+        "rules": [
+            {
+                "t": "set",
+                "p": "languageCode",
+                "pt": "msg",
+                "to": "ja-JP",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "voiceName",
+                "pt": "msg",
+                "to": "ja-JP-Wavenet-A",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "speakingRate",
+                "pt": "msg",
+                "to": "1.1",
+                "tot": "num"
+            },
+            {
+                "t": "set",
+                "p": "pitch",
+                "pt": "msg",
+                "to": "",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 357,
+        "y": 590,
+        "wires": [
+            [
+                "e42c3239.3310b"
+            ]
+        ]
+    },
+    {
+        "id": "2693b39e.9cf79c",
+        "type": "comment",
+        "z": "4f98cc14.8a3424",
+        "name": "Set here ->",
+        "info": "- language\n\nDefault is 'en'. Check [languageCode](https://cloud.google.com/speech-to-text/docs/languages) for more info.\n\n- volume\n\nSet only if you want to change volume level of speech. The value takes between 0 and 1 (loudest).\n\n- use_cloud_tts\n\nDefault is false. Set true to use Google Cloud Test-To-Speech API which is higher quality. NOTE: You need to have Google Cloud account and API key which is not free to use.",
+        "x": 162,
+        "y": 284,
+        "wires": []
+    },
+    {
+        "id": "796bd7a6.c6bc58",
+        "type": "comment",
+        "z": "4f98cc14.8a3424",
+        "name": "Set here ->",
+        "info": "## These parameters are required if you use [Google Colud Text-To-Speech](https://cloud.google.com/text-to-speech/).\n\n- apikey\n\nAPI Key of [Google Colud Text-To-Speech](https://cloud.google.com/text-to-speech/).\n\n\n## Parameters\n\nYou can check the following 4 parameters by opening [Google demo page](https://cloud.google.com/text-to-speech/) and click \"Show JSON\".\n\n- languageCode\n\ndefault is \"en-US\".\n\n- volumeName\n\ndefault is \"en-US-Wavenet-D\".\n\n- speakingRate\n\ndefault is \"1.0\" \n\n- pitch\n\ndefault is \"0.0\"\n\n",
+        "x": 82,
+        "y": 564,
+        "wires": []
+    },
+    {
+        "id": "47ca912a.3b84e",
+        "type": "comment",
+        "z": "4f98cc14.8a3424",
+        "name": "Google-home-notifier flow link entry",
+        "info": "## Inputs\n\n- msg.payload\n\nText to speak.\n\n- msg.audio\n\nIf true, msg.payload is a URL for MP3 audio file.",
+        "x": 175,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "35e27fbe.6fec8",
+        "type": "catch",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "scope": [
+            "674e252d.34df8c",
+            "e42c3239.3310b"
+        ],
+        "x": 245,
+        "y": 717,
+        "wires": [
+            [
+                "9fa33422.4dc228",
+                "613a8de3.ed6564"
+            ]
+        ]
+    },
+    {
+        "id": "613a8de3.ed6564",
+        "type": "debug",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 438.5,
+        "y": 758,
+        "wires": []
+    },
+    {
+        "id": "28a8c6dd.5ddd0a",
+        "type": "mqtt in",
+        "z": "3b143260.9ec95e",
+        "name": "Google Home エアコン",
+        "topic": "googlehome/ac",
+        "qos": "2",
+        "broker": "f7fc179c.be2948",
+        "x": 106,
+        "y": 78,
+        "wires": [
+            [
+                "8142af10.9efa"
+            ]
+        ]
+    },
+    {
+        "id": "d380b675.390db8",
+        "type": "debug",
+        "z": "3b143260.9ec95e",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 630,
+        "y": 78,
+        "wires": []
+    },
+    {
+        "id": "8142af10.9efa",
+        "type": "json",
+        "z": "3b143260.9ec95e",
+        "name": "",
+        "pretty": true,
+        "x": 337,
+        "y": 79,
+        "wires": [
+            [
+                "2480d199.3e97de"
+            ]
+        ]
+    },
+    {
+        "id": "2480d199.3e97de",
+        "type": "function",
+        "z": "3b143260.9ec95e",
+        "name": "set msg",
+        "func": "Object.assign(msg, msg.payload.data);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 347,
+        "y": 143,
+        "wires": [
+            [
+                "d89e22b5.976e",
+                "d380b675.390db8"
+            ]
+        ]
+    },
+    {
+        "id": "f62ff322.0d56a",
+        "type": "debug",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 827,
+        "y": 803,
+        "wires": []
+    },
+    {
+        "id": "950bb6ea.193028",
+        "type": "catch",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "scope": [
+            "e09e779c.5061c8"
+        ],
+        "x": 814,
+        "y": 227,
+        "wires": [
+            [
+                "1648a303.fd2abd"
+            ]
+        ]
+    },
+    {
+        "id": "e1c0a9e9.6fa588",
+        "type": "delay",
+        "z": "4f98cc14.8a3424",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "10",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 407,
+        "y": 884,
+        "wires": [
+            [
+                "ee6314df.8f86c8"
+            ]
+        ]
+    }
+]

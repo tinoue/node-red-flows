@@ -1,1 +1,431 @@
-[{"id":"3b143260.9ec95e","type":"tab","label":"AC ON/OFF","disabled":false,"info":""},{"id":"89ad9815.088b88","type":"debug","z":"3b143260.9ec95e","name":"","active":true,"console":"false","complete":"true","x":108,"y":279,"wires":[]},{"id":"30f8050a.5bf28a","type":"switch","z":"3b143260.9ec95e","name":"dispatch by command","property":"command","propertyType":"msg","rules":[{"t":"eq","v":"TurnOffRequest","vt":"str"},{"t":"eq","v":"TurnOnRequest","vt":"str"},{"t":"eq","v":"IncrementTargetTemperatureRequest","vt":"str"},{"t":"eq","v":"DecrementTargetTemperatureRequest","vt":"str"},{"t":"eq","v":"SetTemperatureRequest","vt":"str"},{"t":"eq","v":"GetTemperatureRequest ","vt":"str"}],"checkall":"false","outputs":6,"x":249,"y":854,"wires":[["d35f2e2f.2ea8b"],[],[],[],[],[]]},{"id":"d35f2e2f.2ea8b","type":"exec","z":"3b143260.9ec95e","command":"/home/pi/bin/broadlink.sh","addpay":false,"append":"AC.off","useSpawn":"true","timer":"15","oldrc":false,"name":"AC.off","x":486,"y":822,"wires":[[],[],[]]},{"id":"5265411f.7896d","type":"function","z":"3b143260.9ec95e","name":"update temperature","func":"var TEMP_DEFAULT = 27\n\nvar temp = global.get(\"temp\") || TEMP_DEFAULT;\n\nmsg.wind = (msg.name !== \"エアコン\") ? \"full\" : \"auto\";\n\nswitch(msg.command) {\n    case \"TurnOffRequest\":\n        global.set(\"tep\", TEMP_DEFAULT);\n        msg.payload = 0;\n        node.status({text: 'OFF'});\n        return msg;\n        break;\n    case \"TurnOnRequest\":\n        break;\n    case \"IncrementTargetTemperatureRequest\":\n    case \"DecrementTargetTemperatureRequest\":\n        temp += msg.payload;\n        break;\n    case \"SetTargetTemperatureRequest\":\n        temp = msg.payload;\n        break;\n    default:\n        node.error(\"Error\", \"Unknown msg.command\");\n        msg.payload = null;\n        node.status({text: 'Error'});\n        return msg;\n}\n\ntemp = Math.min(temp, 29);\ntemp = Math.max(temp, 24);\n\nglobal.set(\"temp\", temp);\nnode.status({text: 'temp: ' + temp + 'C'});\n\nmsg.payload = temp;\n\nreturn msg;","outputs":1,"noerr":0,"x":380,"y":418,"wires":[["5fa23a10.695314","a440cbd3.f2dbb8","64edd397.97d4dc","a8d32c38.1ecc3"]]},{"id":"86fc34f6.4a9ee8","type":"function","z":"3b143260.9ec95e","name":"set exit code","func":"msg.payload = (msg.payload != null)\nreturn msg;","outputs":1,"noerr":0,"x":691,"y":822,"wires":[[]]},{"id":"d89e22b5.976e","type":"switch","z":"3b143260.9ec95e","name":"is GetTemperatureRequest ?","property":"command","propertyType":"msg","rules":[{"t":"eq","v":"GetTemperatureRequest","vt":"str"},{"t":"else"}],"checkall":"true","outputs":2,"x":412,"y":263,"wires":[["3dc1c815.589218"],["5265411f.7896d"]]},{"id":"3dc1c815.589218","type":"function","z":"3b143260.9ec95e","name":"Set temp response","func":"temp = global.get(\"temp\") || 27;\n\nmsg.payload = true;\n\nmsg.extra = {\n    targetTemperature: {\n        value: temp\n    },\n    temperatureMode: {\n        value: \"COOL\"\n    }\n}\n\nreturn msg;","outputs":1,"noerr":0,"x":717,"y":196,"wires":[[]]},{"id":"d7dbdc9d.3851d","type":"debug","z":"3b143260.9ec95e","name":"","active":true,"console":"false","complete":"false","x":988,"y":642,"wires":[]},{"id":"5fa23a10.695314","type":"function","z":"3b143260.9ec95e","name":"Set temp response","func":"var temp = global.get(\"temp\") || 27;\n\nmsg.payload = (msg.payload != null);\n\nmsg.extra = {\n    targetTemperature: {\n        value: temp\n    }\n}\n\nreturn msg;","outputs":1,"noerr":0,"x":720,"y":338,"wires":[["5340fba8.4a0fe4"]]},{"id":"5340fba8.4a0fe4","type":"debug","z":"3b143260.9ec95e","name":"","active":true,"console":"false","complete":"true","x":943,"y":359,"wires":[]},{"id":"5a43402b.24e89","type":"inject","z":"3b143260.9ec95e","name":"Turn off at 1AM","topic":"","payload":"0","payloadType":"num","repeat":"","crontab":"00 01 * * *","once":false,"x":128,"y":639,"wires":[["64edd397.97d4dc","a8d32c38.1ecc3"]]},{"id":"a8d32c38.1ecc3","type":"function","z":"3b143260.9ec95e","name":"get remote command file","func":"if (msg.payload === 0) {\n    msg.payload = \"AC.off\";\n} else if (m
+[
+    {
+        "id": "3b143260.9ec95e",
+        "type": "tab",
+        "label": "AC ON/OFF",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "89ad9815.088b88",
+        "type": "debug",
+        "z": "3b143260.9ec95e",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 108,
+        "y": 279,
+        "wires": []
+    },
+    {
+        "id": "30f8050a.5bf28a",
+        "type": "switch",
+        "z": "3b143260.9ec95e",
+        "name": "dispatch by command",
+        "property": "command",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "TurnOffRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "TurnOnRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "IncrementTargetTemperatureRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "DecrementTargetTemperatureRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "SetTemperatureRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "GetTemperatureRequest ",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "outputs": 6,
+        "x": 249,
+        "y": 854,
+        "wires": [
+            [
+                "d35f2e2f.2ea8b"
+            ],
+            [],
+            [],
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "d35f2e2f.2ea8b",
+        "type": "exec",
+        "z": "3b143260.9ec95e",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": false,
+        "append": "AC.off",
+        "useSpawn": "true",
+        "timer": "15",
+        "oldrc": false,
+        "name": "AC.off",
+        "x": 486,
+        "y": 822,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "5265411f.7896d",
+        "type": "function",
+        "z": "3b143260.9ec95e",
+        "name": "update temperature",
+        "func": "var TEMP_DEFAULT = 27\n\nvar temp = global.get(\"temp\") || TEMP_DEFAULT;\n\nmsg.wind = (msg.name !== \"エアコン\") ? \"full\" : \"auto\";\n\nswitch(msg.command) {\n    case \"TurnOffRequest\":\n        global.set(\"tep\", TEMP_DEFAULT);\n        msg.payload = 0;\n        node.status({text: 'OFF'});\n        return msg;\n        break;\n    case \"TurnOnRequest\":\n        break;\n    case \"IncrementTargetTemperatureRequest\":\n    case \"DecrementTargetTemperatureRequest\":\n        temp += msg.payload;\n        break;\n    case \"SetTargetTemperatureRequest\":\n        temp = msg.payload;\n        break;\n    default:\n        node.error(\"Error\", \"Unknown msg.command\");\n        msg.payload = null;\n        node.status({text: 'Error'});\n        return msg;\n}\n\ntemp = Math.min(temp, 29);\ntemp = Math.max(temp, 24);\n\nglobal.set(\"temp\", temp);\nnode.status({text: 'temp: ' + temp + 'C'});\n\nmsg.payload = temp;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 380,
+        "y": 418,
+        "wires": [
+            [
+                "5fa23a10.695314",
+                "a440cbd3.f2dbb8",
+                "64edd397.97d4dc",
+                "a8d32c38.1ecc3"
+            ]
+        ]
+    },
+    {
+        "id": "86fc34f6.4a9ee8",
+        "type": "function",
+        "z": "3b143260.9ec95e",
+        "name": "set exit code",
+        "func": "msg.payload = (msg.payload != null)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 691,
+        "y": 822,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d89e22b5.976e",
+        "type": "switch",
+        "z": "3b143260.9ec95e",
+        "name": "is GetTemperatureRequest ?",
+        "property": "command",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "GetTemperatureRequest",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "outputs": 2,
+        "x": 412,
+        "y": 263,
+        "wires": [
+            [
+                "3dc1c815.589218"
+            ],
+            [
+                "5265411f.7896d"
+            ]
+        ]
+    },
+    {
+        "id": "3dc1c815.589218",
+        "type": "function",
+        "z": "3b143260.9ec95e",
+        "name": "Set temp response",
+        "func": "temp = global.get(\"temp\") || 27;\n\nmsg.payload = true;\n\nmsg.extra = {\n    targetTemperature: {\n        value: temp\n    },\n    temperatureMode: {\n        value: \"COOL\"\n    }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 717,
+        "y": 196,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d7dbdc9d.3851d",
+        "type": "debug",
+        "z": "3b143260.9ec95e",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 988,
+        "y": 642,
+        "wires": []
+    },
+    {
+        "id": "5fa23a10.695314",
+        "type": "function",
+        "z": "3b143260.9ec95e",
+        "name": "Set temp response",
+        "func": "var temp = global.get(\"temp\") || 27;\n\nmsg.payload = (msg.payload != null);\n\nmsg.extra = {\n    targetTemperature: {\n        value: temp\n    }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 720,
+        "y": 338,
+        "wires": [
+            [
+                "5340fba8.4a0fe4"
+            ]
+        ]
+    },
+    {
+        "id": "5340fba8.4a0fe4",
+        "type": "debug",
+        "z": "3b143260.9ec95e",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 943,
+        "y": 359,
+        "wires": []
+    },
+    {
+        "id": "5a43402b.24e89",
+        "type": "inject",
+        "z": "3b143260.9ec95e",
+        "name": "Turn off at 1AM",
+        "topic": "",
+        "payload": "0",
+        "payloadType": "num",
+        "repeat": "",
+        "crontab": "00 01 * * *",
+        "once": false,
+        "x": 128,
+        "y": 639,
+        "wires": [
+            [
+                "64edd397.97d4dc",
+                "a8d32c38.1ecc3"
+            ]
+        ]
+    },
+    {
+        "id": "a8d32c38.1ecc3",
+        "type": "function",
+        "z": "3b143260.9ec95e",
+        "name": "get remote command file",
+        "func": "if (msg.payload === 0) {\n    msg.payload = \"AC.off\";\n} else if (msg.payload != null) {\n    msg.payload = \"AC\" + msg.payload + msg.wind + \".on\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 690,
+        "y": 536,
+        "wires": [
+            [
+                "a2564858.60d7d8"
+            ]
+        ]
+    },
+    {
+        "id": "a2564858.60d7d8",
+        "type": "exec",
+        "z": "3b143260.9ec95e",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": true,
+        "append": "",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "Send command to remote",
+        "x": 733,
+        "y": 639,
+        "wires": [
+            [],
+            [
+                "d7dbdc9d.3851d"
+            ],
+            [
+                "d7dbdc9d.3851d"
+            ]
+        ]
+    },
+    {
+        "id": "a440cbd3.f2dbb8",
+        "type": "debug",
+        "z": "3b143260.9ec95e",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 701,
+        "y": 418,
+        "wires": []
+    },
+    {
+        "id": "64edd397.97d4dc",
+        "type": "file",
+        "z": "3b143260.9ec95e",
+        "name": "write to /tmp/actemp",
+        "filename": "/tmp/actemp",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "true",
+        "x": 681,
+        "y": 478,
+        "wires": []
+    },
+    {
+        "id": "2afe1e08.ddd3c2",
+        "type": "alexa-home",
+        "z": "3b143260.9ec95e",
+        "conf": "8ef1c622.3bdf38",
+        "device": "26463",
+        "acknoledge": true,
+        "name": "エアコン",
+        "topic": "",
+        "x": 65,
+        "y": 204,
+        "wires": [
+            [
+                "89ad9815.088b88",
+                "d89e22b5.976e"
+            ]
+        ]
+    },
+    {
+        "id": "2148c676.e23f5a",
+        "type": "alexa-home",
+        "z": "3b143260.9ec95e",
+        "conf": "8ef1c622.3bdf38",
+        "device": "26464",
+        "acknoledge": true,
+        "name": "冷房",
+        "topic": "",
+        "x": 55,
+        "y": 352,
+        "wires": [
+            [
+                "d89e22b5.976e"
+            ]
+        ]
+    },
+    {
+        "id": "dba548bb.03fba8",
+        "type": "alexa-home",
+        "z": "3b143260.9ec95e",
+        "conf": "8ef1c622.3bdf38",
+        "device": "26465",
+        "acknoledge": true,
+        "name": "クーラー",
+        "topic": "",
+        "x": 65,
+        "y": 438,
+        "wires": [
+            [
+                "d89e22b5.976e"
+            ]
+        ]
+    },
+    {
+        "id": "28a8c6dd.5ddd0a",
+        "type": "mqtt in",
+        "z": "3b143260.9ec95e",
+        "name": "Google Home エアコン",
+        "topic": "googlehome/ac",
+        "qos": "2",
+        "broker": "f7fc179c.be2948",
+        "x": 106,
+        "y": 78,
+        "wires": [
+            [
+                "8142af10.9efa"
+            ]
+        ]
+    },
+    {
+        "id": "d380b675.390db8",
+        "type": "debug",
+        "z": "3b143260.9ec95e",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 630,
+        "y": 78,
+        "wires": []
+    },
+    {
+        "id": "8142af10.9efa",
+        "type": "json",
+        "z": "3b143260.9ec95e",
+        "name": "",
+        "pretty": true,
+        "x": 337,
+        "y": 79,
+        "wires": [
+            [
+                "2480d199.3e97de"
+            ]
+        ]
+    },
+    {
+        "id": "2480d199.3e97de",
+        "type": "function",
+        "z": "3b143260.9ec95e",
+        "name": "set msg",
+        "func": "Object.assign(msg, msg.payload.data);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 347,
+        "y": 143,
+        "wires": [
+            [
+                "d89e22b5.976e",
+                "d380b675.390db8"
+            ]
+        ]
+    },
+    {
+        "id": "8ef1c622.3bdf38",
+        "type": "alexa-home-conf",
+        "z": "",
+        "username": "tinoue"
+    },
+    {
+        "id": "f7fc179c.be2948",
+        "type": "mqtt-broker",
+        "z": "",
+        "broker": "mqtt.beebotte.com",
+        "port": "8883",
+        "tls": "",
+        "clientid": "",
+        "usetls": true,
+        "compatmode": true,
+        "keepalive": "60",
+        "cleansession": true,
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "birthTopic": "",
+        "birthQos": "2",
+        "birthPayload": ""
+    }
+]

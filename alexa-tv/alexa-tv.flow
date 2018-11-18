@@ -1,1 +1,336 @@
-[{"id":"83dd253d.423d78","type":"tab","label":"TV ON/OFF","disabled":false,"info":""},{"id":"80f303b3.37d3f","type":"exec","z":"83dd253d.423d78","command":"/home/pi/bin/broadlink.sh","addpay":false,"append":"TV.onoff","useSpawn":"false","timer":"15","oldrc":false,"name":"TV.onoff","x":516,"y":36.5,"wires":[[],[],[]]},{"id":"37118b74.fb2ab4","type":"switch","z":"83dd253d.423d78","name":"dispatch by command","property":"command","propertyType":"msg","rules":[{"t":"eq","v":"TurnOnRequest","vt":"str"},{"t":"eq","v":"TurnOffRequest","vt":"str"},{"t":"eq","v":"SetPercentageRequest","vt":"str"},{"t":"eq","v":"IncrementPercentageRequest","vt":"str"},{"t":"eq","v":"DecrementPercentageRequest","vt":"str"},{"t":"eq","v":"SetColorRequest","vt":"str"}],"checkall":"false","outputs":6,"x":252.5,"y":138,"wires":[["80f303b3.37d3f"],["338fbd4.1ecd442"],["f9c2b192.85889"],["398c808f.cd0ae"],["eef00f53.94dc9"],["ea8b5bcc.6221c8"]]},{"id":"338fbd4.1ecd442","type":"exec","z":"83dd253d.423d78","command":"/home/pi/bin/broadlink.sh","addpay":false,"append":"TV.onoff","useSpawn":"false","timer":"15","oldrc":false,"name":"TV.onoff","x":518,"y":96,"wires":[[],[],[]]},{"id":"398c808f.cd0ae","type":"exec","z":"83dd253d.423d78","command":"/home/pi/bin/broadlink.sh","addpay":false,"append":"VOLUP","useSpawn":"false","timer":"15","oldrc":false,"name":"VOLUP","x":523,"y":326,"wires":[[],[],[]]},{"id":"eef00f53.94dc9","type":"exec","z":"83dd253d.423d78","command":"/home/pi/bin/broadlink.sh","addpay":false,"append":"VOLDN","useSpawn":"false","timer":"15","oldrc":false,"name":"VOLDN","x":523,"y":408,"wires":[[],[],[]]},{"id":"df8cca18.c25688","type":"exec","z":"83dd253d.423d78","command":"/home/pi/bin/broadlink.sh","addpay":true,"append":"","useSpawn":"false","timer":"15","oldrc":false,"name":"broadlink","x":613,"y":246,"wires":[["6cc644ba.8cc1cc"],["6cc644ba.8cc1cc"],[]]},{"id":"4916dae2.759824","type":"debug","z":"83dd253d.423d78","name":"","active":false,"console":"false","complete":"payload","x":239,"y":365,"wires":[]},{"id":"f9c2b192.85889","type":"function","z":"83dd253d.423d78","name":"temp to channel","func":"channel = msg.payload;\n\nif (channel == 98) {\n    msg.payload = 'DTB.on';\n//} else if (channel == 99) {\n//    msg.payload = 'INPUT.on';\n} else if (channel == 99) {\n    msg.payload = 'BS.on';\n} else if (channel == 100) {\n    msg.payload = 'PROGRAM.on';\n} else {\n    channel = channel <= 12 ? channel : channel % 10;\n    msg.payload = 'TUNE.' + channel + 'ch';\n}\n\nreturn msg;","outputs":1,"noerr":0,"x":544,"y":152,"wires":[["df8cca18.c25688"]]},{"id":"ea8b5bcc.6221c8","type":"function","z":"83dd253d.423d78","name":"hue to filename","func":"if (msg.payload.hue == 0) { // red\n    msg.payload = 'DTB.on';\n} else if (msg.payload.hue == 60) { // yellow\n    msg.payload = 'INPUT.on';\n} else if (msg.payload.hue == 120) { // green\n    msg.payload = 'BS.on';\n} else if (msg.payload.hue == 240) { // blue\n    msg.payload = 'PROGRAM.on';\n}\nreturn msg;","outputs":1,"noerr":0,"x":560,"y":500,"wires":[["b67894a6.33af18","6cc644ba.8cc1cc"]]},{"id":"b67894a6.33af18","type":"exec","z":"83dd253d.423d78","command":"/home/pi/bin/broadlink.sh","addpay":true,"append":"","useSpawn":"false","timer":"15","oldrc":false,"name":"TV/BS/INPUT/PROGRAM","x":601,"y":613,"wires":[["6cc644ba.8cc1cc"],["6cc644ba.8cc1cc"],[]]},{"id":"6cc644ba.8cc1cc","type":"debug","z":"83dd253d.423d78","name":"exec stderr","active":true,"console":"false","complete":"payload","x":868,"y":88,"wires":[]},{"id":"49779e07.0cbb1","type":"change","z":"83dd253d.423d78","name":"exit code to boolean","rules":[{"t":"change","p":"payload","pt":"msg","from":"0","fromt":"num","to":"true","tot":"bool"},{"t":"set","p":"payload","pt":"msg","to":"false","tot":"bool"}],"action":"","property":"","from":"","to":"","reg":false,"x":907,"y":365,"wires":[[]]},{"id":"939ee260.b5b5a","type":"alexa-home","z":"83dd253d.423d78","conf":"8ef1c622.3bdf38","device":"26462","acknoledge":true,"name":"テレビ","topic":"","x":42,"y":139,"wires":[["37118b74.fb2ab4","4916dae2.759824"]]},{"id":"1fb9ebda.52dbb4","type":"
+[
+    {
+        "id": "83dd253d.423d78",
+        "type": "tab",
+        "label": "TV ON/OFF",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "80f303b3.37d3f",
+        "type": "exec",
+        "z": "83dd253d.423d78",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": false,
+        "append": "TV.onoff",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "TV.onoff",
+        "x": 516,
+        "y": 36.5,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "37118b74.fb2ab4",
+        "type": "switch",
+        "z": "83dd253d.423d78",
+        "name": "dispatch by command",
+        "property": "command",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "TurnOnRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "TurnOffRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "SetPercentageRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "IncrementPercentageRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "DecrementPercentageRequest",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "SetColorRequest",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "outputs": 6,
+        "x": 252.5,
+        "y": 138,
+        "wires": [
+            [
+                "80f303b3.37d3f"
+            ],
+            [
+                "338fbd4.1ecd442"
+            ],
+            [
+                "f9c2b192.85889"
+            ],
+            [
+                "398c808f.cd0ae"
+            ],
+            [
+                "eef00f53.94dc9"
+            ],
+            [
+                "ea8b5bcc.6221c8"
+            ]
+        ]
+    },
+    {
+        "id": "338fbd4.1ecd442",
+        "type": "exec",
+        "z": "83dd253d.423d78",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": false,
+        "append": "TV.onoff",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "TV.onoff",
+        "x": 518,
+        "y": 96,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "398c808f.cd0ae",
+        "type": "exec",
+        "z": "83dd253d.423d78",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": false,
+        "append": "VOLUP",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "VOLUP",
+        "x": 523,
+        "y": 326,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "eef00f53.94dc9",
+        "type": "exec",
+        "z": "83dd253d.423d78",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": false,
+        "append": "VOLDN",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "VOLDN",
+        "x": 523,
+        "y": 408,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "df8cca18.c25688",
+        "type": "exec",
+        "z": "83dd253d.423d78",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": true,
+        "append": "",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "broadlink",
+        "x": 613,
+        "y": 246,
+        "wires": [
+            [
+                "6cc644ba.8cc1cc"
+            ],
+            [
+                "6cc644ba.8cc1cc"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "4916dae2.759824",
+        "type": "debug",
+        "z": "83dd253d.423d78",
+        "name": "",
+        "active": false,
+        "console": "false",
+        "complete": "payload",
+        "x": 239,
+        "y": 365,
+        "wires": []
+    },
+    {
+        "id": "f9c2b192.85889",
+        "type": "function",
+        "z": "83dd253d.423d78",
+        "name": "temp to channel",
+        "func": "channel = msg.payload;\n\nif (channel == 98) {\n    msg.payload = 'DTB.on';\n//} else if (channel == 99) {\n//    msg.payload = 'INPUT.on';\n} else if (channel == 99) {\n    msg.payload = 'BS.on';\n} else if (channel == 100) {\n    msg.payload = 'PROGRAM.on';\n} else {\n    channel = channel <= 12 ? channel : channel % 10;\n    msg.payload = 'TUNE.' + channel + 'ch';\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 544,
+        "y": 152,
+        "wires": [
+            [
+                "df8cca18.c25688"
+            ]
+        ]
+    },
+    {
+        "id": "ea8b5bcc.6221c8",
+        "type": "function",
+        "z": "83dd253d.423d78",
+        "name": "hue to filename",
+        "func": "if (msg.payload.hue == 0) { // red\n    msg.payload = 'DTB.on';\n} else if (msg.payload.hue == 60) { // yellow\n    msg.payload = 'INPUT.on';\n} else if (msg.payload.hue == 120) { // green\n    msg.payload = 'BS.on';\n} else if (msg.payload.hue == 240) { // blue\n    msg.payload = 'PROGRAM.on';\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 560,
+        "y": 500,
+        "wires": [
+            [
+                "b67894a6.33af18",
+                "6cc644ba.8cc1cc"
+            ]
+        ]
+    },
+    {
+        "id": "b67894a6.33af18",
+        "type": "exec",
+        "z": "83dd253d.423d78",
+        "command": "/home/pi/bin/broadlink.sh",
+        "addpay": true,
+        "append": "",
+        "useSpawn": "false",
+        "timer": "15",
+        "oldrc": false,
+        "name": "TV/BS/INPUT/PROGRAM",
+        "x": 601,
+        "y": 613,
+        "wires": [
+            [
+                "6cc644ba.8cc1cc"
+            ],
+            [
+                "6cc644ba.8cc1cc"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "6cc644ba.8cc1cc",
+        "type": "debug",
+        "z": "83dd253d.423d78",
+        "name": "exec stderr",
+        "active": true,
+        "console": "false",
+        "complete": "payload",
+        "x": 868,
+        "y": 88,
+        "wires": []
+    },
+    {
+        "id": "49779e07.0cbb1",
+        "type": "change",
+        "z": "83dd253d.423d78",
+        "name": "exit code to boolean",
+        "rules": [
+            {
+                "t": "change",
+                "p": "payload",
+                "pt": "msg",
+                "from": "0",
+                "fromt": "num",
+                "to": "true",
+                "tot": "bool"
+            },
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 907,
+        "y": 365,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "939ee260.b5b5a",
+        "type": "alexa-home",
+        "z": "83dd253d.423d78",
+        "conf": "8ef1c622.3bdf38",
+        "device": "26462",
+        "acknoledge": true,
+        "name": "テレビ",
+        "topic": "",
+        "x": 42,
+        "y": 139,
+        "wires": [
+            [
+                "37118b74.fb2ab4",
+                "4916dae2.759824"
+            ]
+        ]
+    },
+    {
+        "id": "1fb9ebda.52dbb4",
+        "type": "alexa-local",
+        "z": "83dd253d.423d78",
+        "devicename": "モニター",
+        "inputtrigger": false,
+        "x": 62,
+        "y": 570,
+        "wires": [
+            [
+                "58cae1ba.7d406"
+            ]
+        ]
+    },
+    {
+        "id": "58cae1ba.7d406",
+        "type": "debug",
+        "z": "83dd253d.423d78",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 284,
+        "y": 707,
+        "wires": []
+    },
+    {
+        "id": "8ef1c622.3bdf38",
+        "type": "alexa-home-conf",
+        "z": "",
+        "username": "tinoue"
+    }
+]

@@ -1,1 +1,314 @@
-[{"id":"df94414b.e7c66","type":"tab","label":"Talk LINE message","disabled":false,"info":""},{"id":"fb7da211.36f73","type":"mqtt in","z":"df94414b.e7c66","name":"LINE message from beebotte via MS Flow","topic":"line/message","qos":"2","broker":"fd3df410.9a57d8","x":193,"y":153,"wires":[["64ceac22.a6c9e4","392918ae.e3bf18"]]},{"id":"64ceac22.a6c9e4","type":"debug","z":"df94414b.e7c66","name":"","active":true,"console":"false","complete":"true","x":289,"y":221,"wires":[]},{"id":"99da5480.097588","type":"function","z":"df94414b.e7c66","name":"get text to speak","func":"function getUsername(userId) {\n  // Create line users json file\n  // eg. [ \"Uabcdefghijklmnopqrstuvwxyz0123456789\": \"太郎\" }\n \n  if (flow.get('line_users') && flow.get('line_users')[userId]) {\n      return flow.get('line_users')[userId] + 'からLINE。';\n  }\n  \n  return '';\n}\n\nif (typeof(msg.payload.data) === 'string') {\n    msg.payload = msg.payload.data;\n} else if (msg.payload.data[0]) {\n  // Get LINE message sent from beebotte\n  const event = msg.payload.data[0];\n\n  if (event.type === 'message' && event.message.type === 'text') {\n    const username = getUsername(event.source.userId);\n    const text = username + event.message.text;\n\n    if (event.source.groupId && \n        ! event.message.text.match(/^[　 ]/) &&\n        ! event.message.text.match(/^\\[IFTTT\\][　 ]{2}/)) {\n        return null;\n    }\n\n    msg.payload = text;\n  } else if (event.type === 'message' && event.message.type === 'audio') {\n    const audioUrl = 'https://api.line.me/v2/bot/message/' + event.message.id + '/content';\n    flow.set(\"line_content_url\", audioUrl);\n\n    msg.payload = 'http://' + global.get('ip_address') + ':1880/linecontent';\n    msg.audio = true;\n  } else {\n    node.warn('No text message.');\n    return null;\n  }\n}\n\nreturn msg;","outputs":1,"noerr":0,"x":571,"y":227,"wires":[["6a2fe52c.159b1c"]]},{"id":"392918ae.e3bf18","type":"json","z":"df94414b.e7c66","name":"parse events json","pretty":true,"x":529,"y":154,"wires":[["99da5480.097588"]]},{"id":"91f83c2c.ce012","type":"http in","z":"df94414b.e7c66","name":"LINE audio endpoint for google-home-notifier","url":"/linecontent","method":"get","upload":false,"swaggerDoc":"","x":197,"y":624,"wires":[["84bfed71.d2e","1be888c8.22ead7"]]},{"id":"54921098.f3b11","type":"http response","z":"df94414b.e7c66","name":"","statusCode":"","headers":{},"x":746,"y":830,"wires":[]},{"id":"5481bae8.f5f2d4","type":"http request","z":"df94414b.e7c66","name":"Get line message content","method":"GET","ret":"bin","url":"","tls":"","x":531,"y":830,"wires":[["54921098.f3b11","84bfed71.d2e"]]},{"id":"548fe733.70e208","type":"function","z":"df94414b.e7c66","name":"Set URL and token of LINE content","func":"const channelAccessToken = msg.token;\n\nmsg.url = flow.get(\"line_content_url\");\nmsg.headers = {\n    'Authorization': 'Bearer ' + channelAccessToken\n};\n\nreturn msg;","outputs":1,"noerr":0,"x":467,"y":758,"wires":[["5481bae8.f5f2d4","84bfed71.d2e"]]},{"id":"84bfed71.d2e","type":"debug","z":"df94414b.e7c66","name":"","active":true,"console":"false","complete":"true","x":721,"y":628,"wires":[]},{"id":"1be888c8.22ead7","type":"credentials","z":"df94414b.e7c66","name":"Channel access token of LINE","props":[{"value":"token","type":"msg"}],"x":355,"y":690,"wires":[["548fe733.70e208"]]},{"id":"6a2fe52c.159b1c","type":"link out","z":"df94414b.e7c66","name":"Google home notification","links":["32fd5b36.bca094"],"x":701,"y":228,"wires":[]},{"id":"b7ebc8c7.8cb228","type":"hostip","z":"df94414b.e7c66","name":"Host IP","x":324,"y":534,"wires":[["35f06523.a51f8a"]]},{"id":"7dc251b0.a0f01","type":"inject","z":"df94414b.e7c66","name":"startup trigger","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":true,"x":125,"y":317,"wires":[["b7ebc8c7.8cb228","a01cb4a4.a94d48"]]},{"id":"35f06523.a51f8a","type":"function","z":"df94414b.e7c66","name":"Store IP address into global","func":"var address = '';\n\nif (msg.payload[0] && msg.payload[0].address) {\n    address = msg.payload[0].address;\n 
+[
+    {
+        "id": "df94414b.e7c66",
+        "type": "tab",
+        "label": "Talk LINE message",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "fb7da211.36f73",
+        "type": "mqtt in",
+        "z": "df94414b.e7c66",
+        "name": "LINE message from beebotte via MS Flow",
+        "topic": "line/message",
+        "qos": "2",
+        "broker": "fd3df410.9a57d8",
+        "x": 193,
+        "y": 153,
+        "wires": [
+            [
+                "64ceac22.a6c9e4",
+                "392918ae.e3bf18"
+            ]
+        ]
+    },
+    {
+        "id": "64ceac22.a6c9e4",
+        "type": "debug",
+        "z": "df94414b.e7c66",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 289,
+        "y": 221,
+        "wires": []
+    },
+    {
+        "id": "99da5480.097588",
+        "type": "function",
+        "z": "df94414b.e7c66",
+        "name": "get text to speak",
+        "func": "function getUsername(userId) {\n  // Create line users json file\n  // eg. [ \"Uabcdefghijklmnopqrstuvwxyz0123456789\": \"太郎\" }\n \n  if (flow.get('line_users') && flow.get('line_users')[userId]) {\n      return flow.get('line_users')[userId] + 'からLINE。';\n  }\n  \n  return '';\n}\n\nif (typeof(msg.payload.data) === 'string') {\n    msg.payload = msg.payload.data;\n} else if (msg.payload.data[0]) {\n  // Get LINE message sent from beebotte\n  const event = msg.payload.data[0];\n\n  if (event.type === 'message' && event.message.type === 'text') {\n    const username = getUsername(event.source.userId);\n    const text = username + event.message.text;\n\n    if (event.source.groupId && \n        ! event.message.text.match(/^[　 ]/) &&\n        ! event.message.text.match(/^\\[IFTTT\\][　 ]{2}/)) {\n        return null;\n    }\n\n    msg.payload = text;\n  } else if (event.type === 'message' && event.message.type === 'audio') {\n    const audioUrl = 'https://api.line.me/v2/bot/message/' + event.message.id + '/content';\n    flow.set(\"line_content_url\", audioUrl);\n\n    msg.payload = 'http://' + global.get('ip_address') + ':1880/linecontent';\n    msg.audio = true;\n  } else {\n    node.warn('No text message.');\n    return null;\n  }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 571,
+        "y": 227,
+        "wires": [
+            [
+                "6a2fe52c.159b1c"
+            ]
+        ]
+    },
+    {
+        "id": "392918ae.e3bf18",
+        "type": "json",
+        "z": "df94414b.e7c66",
+        "name": "parse events json",
+        "pretty": true,
+        "x": 529,
+        "y": 154,
+        "wires": [
+            [
+                "99da5480.097588"
+            ]
+        ]
+    },
+    {
+        "id": "91f83c2c.ce012",
+        "type": "http in",
+        "z": "df94414b.e7c66",
+        "name": "LINE audio endpoint for google-home-notifier",
+        "url": "/linecontent",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 197,
+        "y": 624,
+        "wires": [
+            [
+                "84bfed71.d2e",
+                "1be888c8.22ead7"
+            ]
+        ]
+    },
+    {
+        "id": "54921098.f3b11",
+        "type": "http response",
+        "z": "df94414b.e7c66",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 746,
+        "y": 830,
+        "wires": []
+    },
+    {
+        "id": "5481bae8.f5f2d4",
+        "type": "http request",
+        "z": "df94414b.e7c66",
+        "name": "Get line message content",
+        "method": "GET",
+        "ret": "bin",
+        "url": "",
+        "tls": "",
+        "x": 531,
+        "y": 830,
+        "wires": [
+            [
+                "54921098.f3b11",
+                "84bfed71.d2e"
+            ]
+        ]
+    },
+    {
+        "id": "548fe733.70e208",
+        "type": "function",
+        "z": "df94414b.e7c66",
+        "name": "Set URL and token of LINE content",
+        "func": "const channelAccessToken = msg.token;\n\nmsg.url = flow.get(\"line_content_url\");\nmsg.headers = {\n    'Authorization': 'Bearer ' + channelAccessToken\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 467,
+        "y": 758,
+        "wires": [
+            [
+                "5481bae8.f5f2d4",
+                "84bfed71.d2e"
+            ]
+        ]
+    },
+    {
+        "id": "84bfed71.d2e",
+        "type": "debug",
+        "z": "df94414b.e7c66",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 721,
+        "y": 628,
+        "wires": []
+    },
+    {
+        "id": "1be888c8.22ead7",
+        "type": "credentials",
+        "z": "df94414b.e7c66",
+        "name": "Channel access token of LINE",
+        "props": [
+            {
+                "value": "token",
+                "type": "msg"
+            }
+        ],
+        "x": 355,
+        "y": 690,
+        "wires": [
+            [
+                "548fe733.70e208"
+            ]
+        ]
+    },
+    {
+        "id": "6a2fe52c.159b1c",
+        "type": "link out",
+        "z": "df94414b.e7c66",
+        "name": "Google home notification",
+        "links": [
+            "32fd5b36.bca094"
+        ],
+        "x": 701,
+        "y": 228,
+        "wires": []
+    },
+    {
+        "id": "b7ebc8c7.8cb228",
+        "type": "hostip",
+        "z": "df94414b.e7c66",
+        "name": "Host IP",
+        "x": 324,
+        "y": 534,
+        "wires": [
+            [
+                "35f06523.a51f8a"
+            ]
+        ]
+    },
+    {
+        "id": "7dc251b0.a0f01",
+        "type": "inject",
+        "z": "df94414b.e7c66",
+        "name": "startup trigger",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "x": 125,
+        "y": 317,
+        "wires": [
+            [
+                "a01cb4a4.a94d48"
+            ]
+        ]
+    },
+    {
+        "id": "35f06523.a51f8a",
+        "type": "function",
+        "z": "df94414b.e7c66",
+        "name": "Store IP address into global",
+        "func": "var address = '';\n\nif (msg.payload[0] && msg.payload[0].address) {\n    address = msg.payload[0].address;\n    node.status({text: 'IP addr: ' + address});\n    \n} else {\n    node.status({text: 'No IP address found'});\n}\n\nglobal.set('ip_address', address);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 616,
+        "y": 534,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a01cb4a4.a94d48",
+        "type": "file in",
+        "z": "df94414b.e7c66",
+        "name": "/home/pi/.node-red/line_users.json",
+        "filename": "/home/pi/.node-red/line_users.json",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "x": 393,
+        "y": 321,
+        "wires": [
+            [
+                "5cd04c24.781984"
+            ]
+        ]
+    },
+    {
+        "id": "f2505037.6275c",
+        "type": "function",
+        "z": "df94414b.e7c66",
+        "name": "Set line user table into flow variable",
+        "func": "if (msg.payload) {\n    flow.set('line_users', msg.payload);\n    node.status({text: 'line_users set.'});\n} else {\n    node.status({text: 'No line_users'});\n}\n\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 657,
+        "y": 389,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1bafee68.4e4582",
+        "type": "catch",
+        "z": "df94414b.e7c66",
+        "name": "Catch error reading line_users.json",
+        "scope": [
+            "5cd04c24.781984",
+            "a01cb4a4.a94d48"
+        ],
+        "x": 424,
+        "y": 443,
+        "wires": [
+            [
+                "2f30515a.bdb39e"
+            ]
+        ]
+    },
+    {
+        "id": "5cd04c24.781984",
+        "type": "json",
+        "z": "df94414b.e7c66",
+        "name": "parse json",
+        "pretty": true,
+        "x": 412,
+        "y": 389,
+        "wires": [
+            [
+                "f2505037.6275c"
+            ]
+        ]
+    },
+    {
+        "id": "2f30515a.bdb39e",
+        "type": "debug",
+        "z": "df94414b.e7c66",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "true",
+        "x": 655,
+        "y": 444,
+        "wires": []
+    },
+    {
+        "id": "fd3df410.9a57d8",
+        "type": "mqtt-broker",
+        "z": "",
+        "broker": "mqtt.beebotte.com",
+        "port": "8883",
+        "tls": "",
+        "clientid": "",
+        "usetls": true,
+        "compatmode": true,
+        "keepalive": "60",
+        "cleansession": true,
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": ""
+    }
+]
